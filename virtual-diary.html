@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Diary</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virtual Diary - GNDU Physics Club</title>
   <style>
     body {
       margin: 0;
@@ -27,6 +27,13 @@
       flex-direction: column;
       padding: 10px;
       transition: transform 0.4s ease;
+    }
+    .title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      text-align: center;
+      color: #3b2f2f;
+      margin-bottom: 0.5rem;
     }
     .header {
       background: #d4b483;
@@ -54,7 +61,6 @@
       transform-origin: center;
     }
     .footer {
-      background: transparent;
       padding: 0.5rem;
       display: flex;
       justify-content: space-between;
@@ -68,7 +74,15 @@
       cursor: pointer;
       border-radius: 6px;
     }
-    #popup {
+    .btn.small-delete {
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      background: #f8c4c4;
+      color: #700;
+      border: 2px solid #b66;
+      margin-left: 10px;
+    }
+    #popup, #loginPopup, #commentPopup {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -97,23 +111,21 @@
       border: 1px solid #a67c52;
       border-radius: 4px;
     }
-    input {
-      height: 30px;
-    }
-    textarea {
-      height: 100px;
-    }
+    input { height: 30px; }
+    textarea { height: 100px; }
   </style>
 </head>
 <body>
   <div class="diary">
+    <div class="title">GNDU Physics Club</div>
     <div class="header">
       <span id="date">Loading...</span>
-      <button class="btn" onclick="showPopup()">+ Add Thought</button>
+      <div>
+        <button class="btn" onclick="showPopup()">+ Add Thought</button>
+        <button class="btn" onclick="showLogin()">Login as Admin</button>
+      </div>
     </div>
-    <div class="page" id="pageContent">
-      Loading thoughts...
-    </div>
+    <div class="page" id="pageContent">Loading thoughts...</div>
     <div class="footer">
       <button class="btn" id="prevBtn">⬅️ Previous Day</button>
       <button class="btn" id="nextBtn">Next Day ➡️</button>
@@ -121,118 +133,178 @@
   </div>
 
   <div id="overlay"></div>
+
   <div id="popup">
     <input type="text" id="nameInput" placeholder="Your name..." />
     <textarea id="thoughtInput" placeholder="Write your thought..."></textarea>
     <button class="btn" onclick="saveThought()">Submit</button>
   </div>
 
+  <div id="loginPopup">
+    <input type="password" id="adminPass" placeholder="Enter admin password" />
+    <button class="btn" onclick="checkLogin()">Login</button>
+  </div>
+
+  <div id="commentPopup">
+    <input type="text" id="commentName" placeholder="Your name..." />
+    <textarea id="commentText" placeholder="Write your comment..."></textarea>
+    <button class="btn" onclick="submitComment()">Submit</button>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
- <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB4eoofAdY4DrW-VKvfGJl5aNv2hoCTn4c",
-    authDomain: "iist-fd6e8.firebaseapp.com",
-    databaseURL: "https://iist-fd6e8-default-rtdb.firebaseio.com",
-    projectId: "iist-fd6e8",
-    storageBucket: "iist-fd6e8.appspot.com",
-    messagingSenderId: "692699808449",
-    appId: "1:692699808449:web:120c8941a940d071f24a40"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4eoofAdY4DrW-VKvfGJl5aNv2hoCTn4c",
+      authDomain: "iist-fd6e8.firebaseapp.com",
+      databaseURL: "https://iist-fd6e8-default-rtdb.firebaseio.com",
+      projectId: "iist-fd6e8",
+      storageBucket: "iist-fd6e8.appspot.com",
+      messagingSenderId: "692699808449",
+      appId: "1:692699808449:web:120c8941a940d071f24a40"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-  const dateElem = document.getElementById('date');
-  const pageContent = document.getElementById('pageContent');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
+    let isAdmin = false;
+    let currentDate = new Date();
+    let pages = {};
+    let activeCommentThoughtId = null;
 
-  let pages = {};
-  let currentDate = new Date(); // <-- Track the active date
+    const dateElem = document.getElementById('date');
+    const pageContent = document.getElementById('pageContent');
 
-  function formatDate(date) {
-    return date.toDateString();
-  }
+    function formatDate(date) {
+      return date.toDateString();
+    }
 
-  function showPopup() {
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('popup').style.display = 'block';
-  }
-
-  function hidePopup() {
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('popup').style.display = 'none';
-  }
-
-  function saveThought() {
-    const name = document.getElementById('nameInput').value.trim();
-    const thought = document.getElementById('thoughtInput').value.trim();
-    if (name === '' || thought === '') return;
-
-    const timestamp = Date.now();
-    db.ref('diary/' + timestamp).set({
-      name: name,
-      date: currentDate.toISOString(),
-      content: thought
-    }).then(() => {
-      hidePopup();
-      document.getElementById('nameInput').value = '';
-      document.getElementById('thoughtInput').value = '';
-      loadThoughts(); // Refresh entries
-    });
-  }
-
-  function loadThoughts() {
-    db.ref('diary').once('value').then(snapshot => {
-      const data = snapshot.val() || {};
-      pages = {};
-
-      // Sort and group entries by day
-      Object.values(data).forEach(entry => {
-        const dayStr = new Date(entry.date).toDateString();
-        if (!pages[dayStr]) pages[dayStr] = [];
-        pages[dayStr].push(entry);
+    function showPopup() {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('popup').style.display = 'block';
+    }
+    function hidePopup() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('popup').style.display = 'none';
+    }
+    function showLogin() {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('loginPopup').style.display = 'block';
+    }
+    function hideLogin() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('loginPopup').style.display = 'none';
+      document.getElementById('adminPass').value = '';
+    }
+    function checkLogin() {
+      const pass = document.getElementById('adminPass').value.trim();
+      if (pass === 'wonders') {
+        isAdmin = true;
+        alert('Logged in as Admin');
+        hideLogin();
+        showPage(currentDate);
+      } else {
+        alert('Incorrect password.');
+      }
+    }
+    function saveThought() {
+      const name = document.getElementById('nameInput').value.trim();
+      const thought = document.getElementById('thoughtInput').value.trim();
+      if (!name || !thought) return;
+      const timestamp = Date.now();
+      db.ref('diary/' + timestamp).set({
+        name, date: currentDate.toISOString(), content: thought, comments: {}
+      }).then(() => {
+        hidePopup();
+        document.getElementById('nameInput').value = '';
+        document.getElementById('thoughtInput').value = '';
+        loadThoughts();
       });
-
+    }
+    function deleteThought(timestamp) {
+      if (isAdmin && confirm("Delete this thought?")) {
+        db.ref('diary/' + timestamp).remove().then(() => loadThoughts());
+      }
+    }
+    function deleteComment(thoughtId, commentId) {
+      if (isAdmin && confirm("Delete this comment?")) {
+        db.ref(`diary/${thoughtId}/comments/${commentId}`).remove().then(() => loadThoughts());
+      }
+    }
+    function showCommentBox(thoughtId) {
+      activeCommentThoughtId = thoughtId;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('commentPopup').style.display = 'block';
+    }
+    function submitComment() {
+      const name = document.getElementById('commentName').value.trim();
+      const comment = document.getElementById('commentText').value.trim();
+      if (!name || !comment) return;
+      const commentId = Date.now();
+      db.ref(`diary/${activeCommentThoughtId}/comments/${commentId}`).set({
+        name, comment
+      }).then(() => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('commentPopup').style.display = 'none';
+        document.getElementById('commentName').value = '';
+        document.getElementById('commentText').value = '';
+        loadThoughts();
+      });
+    }
+    function loadThoughts() {
+      db.ref('diary').once('value').then(snapshot => {
+        const data = snapshot.val() || {};
+        pages = {};
+        Object.entries(data).forEach(([timestamp, entry]) => {
+          const dayStr = new Date(entry.date).toDateString();
+          if (!pages[dayStr]) pages[dayStr] = [];
+          entry.timestamp = timestamp;
+          entry.comments = entry.comments || {};
+          pages[dayStr].push(entry);
+        });
+        showPage(currentDate);
+      });
+    }
+    function showPage(dateObj) {
+      const dateStr = formatDate(dateObj);
+      dateElem.textContent = dateStr;
+      const entries = pages[dateStr] || [];
+      pageContent.innerHTML = '';
+      if (entries.length === 0) {
+        pageContent.innerHTML = "<p><em>No thoughts for this day yet.</em></p>";
+        return;
+      }
+      entries.forEach(entry => {
+        const container = document.createElement('div');
+        container.innerHTML = `
+          <p><strong>${entry.name}</strong>: ${entry.content}
+          ${isAdmin ? `<button class="btn small-delete" onclick="deleteThought(${entry.timestamp})">Delete</button>` : ''}
+          <button class="btn" onclick="showCommentBox(${entry.timestamp})">💬 Comment</button></p>
+        `;
+        const comments = entry.comments || {};
+        if (Object.keys(comments).length > 0) {
+          const thread = document.createElement('div');
+          thread.style.marginLeft = '20px';
+          thread.style.paddingLeft = '10px';
+          thread.style.borderLeft = '2px dashed #aaa';
+          Object.entries(comments).forEach(([cid, c]) => {
+            const cp = document.createElement('p');
+            cp.innerHTML = `<strong>${c.name}</strong>: ${c.comment} ${isAdmin ? `<button class='btn small-delete' onclick='deleteComment(${entry.timestamp}, ${cid})'>x</button>` : ''}`;
+            thread.appendChild(cp);
+          });
+          container.appendChild(thread);
+        }
+        pageContent.appendChild(container);
+      });
+    }
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      currentDate.setDate(currentDate.getDate() - 1);
       showPage(currentDate);
     });
-  }
-
-  function showPage(dateObj) {
-    const dateStr = formatDate(dateObj);
-    dateElem.textContent = dateStr;
-
-    const entries = pages[dateStr] || [];
-
-    pageContent.style.transition = 'none';
-    pageContent.style.transform = 'rotateY(-90deg)';
-    pageContent.style.opacity = 0;
-
-    setTimeout(() => {
-      let html = "";
-      if (entries.length === 0) {
-        html = "<p><em>No thoughts for this day yet.</em></p>";
-      } else {
-        entries.forEach(entry => {
-          html += `<p><strong>${entry.name}</strong>: ${entry.content}</p>`;
-        });
-      }
-      pageContent.innerHTML = html;
-      pageContent.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
-      pageContent.style.transform = 'rotateY(0deg)';
-      pageContent.style.opacity = 1;
-    }, 100);
-  }
-
-  prevBtn.addEventListener('click', () => {
-    currentDate.setDate(currentDate.getDate() - 1);
-    showPage(currentDate);
-  });
-
-  nextBtn.addEventListener('click', () => {
-    currentDate.setDate(currentDate.getDate() + 1);
-    showPage(currentDate);
-  });
-
-  loadThoughts();
-</script>
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currentDate.setDate(currentDate.getDate() + 1);
+      showPage(currentDate);
+    });
+    loadThoughts();
+  </script>
+</body>
+</html>
