@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GNDU Physics Club</title>
-  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
@@ -113,15 +113,35 @@
       font-size: 12px;
       color: #444;
     }
+    /* Popup modal */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #f0f8ff;
+      border: 2px solid #000080;
+      padding: 20px;
+      z-index: 1000;
+      box-shadow: 4px 4px 10px gray;
+      border-radius: 10px;
+      width: 300px;
+    }
+    #popup button {
+      width: 48%;
+      margin-right: 2%;
+    }
+    #popup input {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="window">
     <div class="titlebar">
       <span>GNDU Physics Club – Talks Registeration</span>
-      <nav>
-        <a href="https://github.com/GNDU-Physics/">github</a>
-      </nav>
+      <nav><a href="https://github.com/GNDU-Physics/">github</a></nav>
     </div>
     <div class="content">
       <h2>📅 Submit Your Physics Talk</h2>
@@ -138,23 +158,35 @@
     </div>
     <footer>© GNDU Physics Club, 2025.</footer>
   </div>
+
+  <!-- Popup modal -->
+  <div id="popup">
+    <h3 id="popupTitle"></h3>
+    <p id="popupDetails"></p>
+    <input type="password" id="passwordInput" placeholder="Enter password to delete" />
+    <br>
+    <button onclick="confirmDelete()">🗑 Delete</button>
+    <button onclick="closePopup()">❌ Cancel</button>
+  </div>
+
   <script>
-      const firebaseConfig = {
-  apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
-  authDomain: "gndu-phys.firebaseapp.com",
-  databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
-  projectId: "gndu-phys",
-  storageBucket: "gndu-phys.firebasestorage.app",
-  messagingSenderId: "527351049402",
-  appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
-  measurementId: "G-WQGP6DHMSL"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
+      authDomain: "gndu-phys.firebaseapp.com",
+      databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
+      projectId: "gndu-phys",
+      storageBucket: "gndu-phys.firebasestorage.app",
+      messagingSenderId: "527351049402",
+      appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
+      measurementId: "G-WQGP6DHMSL"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const calendarEl = document.getElementById('calendar');
     let calendar;
+    let currentEvent = null;
 
     function fetchEvents(callback) {
       db.ref('talks').once('value', snapshot => {
@@ -175,17 +207,45 @@
       db.ref('talks/' + id).remove();
     }
 
+    function showPopup(info) {
+      currentEvent = info.event;
+      document.getElementById('popupTitle').textContent = "Talk Details";
+      document.getElementById('popupDetails').innerHTML = `
+        <strong>Date:</strong> ${currentEvent.start.toISOString().split('T')[0]}<br>
+        <strong>Info:</strong><br>${currentEvent.title.replace(/\n/g, "<br>")}
+      `;
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('popup').style.display = 'block';
+    }
+
+    function closePopup() {
+      currentEvent = null;
+      document.getElementById('popup').style.display = 'none';
+    }
+
+    function confirmDelete() {
+      const password = document.getElementById('passwordInput').value;
+      if (password === 'astrodingra') {
+        deleteEventFromFirebase(currentEvent.id);
+        currentEvent.remove();
+        closePopup();
+        alert('Talk deleted successfully.');
+      } else {
+        alert('Incorrect password!');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       fetchEvents(function(events) {
         calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: 'dayGridMonth',
           height: 500,
           events: events,
+          eventMouseEnter: function(info) {
+            info.el.style.cursor = 'pointer';
+          },
           eventClick: function(info) {
-            if (confirm('Delete this event?')) {
-              info.event.remove();
-              deleteEventFromFirebase(info.event.id);
-            }
+            showPopup(info);
           }
         });
         calendar.render();
