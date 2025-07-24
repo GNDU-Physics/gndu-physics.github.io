@@ -143,7 +143,7 @@
         // --- FIREBASE CONFIGURATION ---
         // IMPORTANT: Replace with your actual Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY", // Replace with your actual API key
+            apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
             authDomain: "gndu-phys.firebaseapp.com",
             databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
             projectId: "gndu-phys",
@@ -192,6 +192,11 @@
         
         // 1. Initialize Firebase
         function initializeFirebase() {
+            // A check to ensure the API key is not the placeholder
+            if (firebaseConfig.apiKey === "YOUR_API_KEY" || firebaseConfig.apiKey === "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE") {
+                 showAlert("Configuration Error: Please replace the placeholder API Key in the code with your actual Firebase API key.");
+                 return;
+            }
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -201,7 +206,7 @@
                 checkFirstVisit();
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                showAlert("Could not connect to the database. Please check the Firebase configuration and ensure the API key is correct.");
+                showAlert("Could not connect to the database. Please check the Firebase configuration and ensure it is correct.");
             }
         }
 
@@ -269,7 +274,7 @@
                 updateBreadcrumbs();
             }, (error) => {
                 console.error("Error fetching documents: ", error);
-                showAlert("Error fetching data. Check your Firebase security rules. They may need to be public for this to work without authentication.");
+                showAlert("Error fetching data. Check your Firebase security rules. They must be set to public for this app to work without user sign-in.");
                 loadingIndicator.style.display = 'none';
             });
         }
@@ -379,7 +384,9 @@
             }
 
             const currentParentId = currentPathIds[currentPathIds.length - 1];
-            const storagePath = `${currentPath.join('/')}/${file.name}`;
+            // Sanitize file name to prevent path issues
+            const sanitizedFileName = file.name.replace(/[#$[\]*?]/g, '_');
+            const storagePath = `${currentPath.join('/')}/${Date.now()}_${sanitizedFileName}`;
             const storageRef = ref(storage, storagePath);
             const uploadTask = uploadBytesResumable(storageRef, file);
             
@@ -424,8 +431,9 @@
         }
 
         async function handleDeleteItem(item) {
-            const confirmation = confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`);
-            if (!confirmation) return;
+            // Replaced confirm() with a custom modal if needed, but for simplicity keeping confirm()
+            // It might not work in all sandboxed environments.
+            if (!confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) return;
 
             if (item.type === 'file') {
                 // Delete a single file
@@ -452,8 +460,13 @@
                     await deleteFolderContents(child.id);
                 } else {
                     // If child is a file, delete from storage
-                    const fileRef = ref(storage, child.storagePath);
-                    await deleteObject(fileRef).catch(err => console.error("Error deleting storage object:", err));
+                    try {
+                        const fileRef = ref(storage, child.storagePath);
+                        await deleteObject(fileRef);
+                    } catch(err) {
+                        // Ignore errors for files that might not exist in storage but have a DB entry
+                        console.warn("Could not delete storage object (it may have been already deleted):", child.storagePath, err);
+                    }
                 }
                 // Add the Firestore document deletion to the batch
                 batch.delete(doc(db, "archive", child.id));
