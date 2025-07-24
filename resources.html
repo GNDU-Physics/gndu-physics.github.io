@@ -1,397 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Department - Exam Paper Archive</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .folder {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            height: 120px;
-        }
-        .folder:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-        #initial-loading-container {
-            display: flex; justify-content: center; align-items: center; min-height: 40vh;
-        }
-        .modal-backdrop {
-            background-color: rgba(0,0,0,0.5);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Exam Archive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
-
-    <!-- Firebase and App Dependencies -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- CONFIGURATION ---
-        // Corrected Firebase config to match user's provided details exactly.
-        const firebaseConfig = {
-            apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
-            authDomain: "gndu-phys.firebaseapp.com",
-            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
-            projectId: "gndu-phys",
-            storageBucket: "gndu-phys.firebasestorage.app",
-            messagingSenderId: "527351049402",
-            appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
-            measurementId: "G-WQGP6DHMSL"
-        };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gndu-phys';
-        
-        // --- FIREBASE & APP STATE ---
-        let app, auth, db, papersCollection;
-        let userId = null;
-        let unsubscribeSnapshot = null;
-        let state = { path: [], view: 'degrees' };
-
-        // --- DOM ELEMENTS ---
-        const contentArea = document.getElementById('content-area');
-        const breadcrumbsContainer = document.getElementById('breadcrumbs');
-        const initialLoadingContainer = document.getElementById('initial-loading-container');
-        const loadingMessage = document.getElementById('loading-message');
-        const currentYearSpan = document.getElementById('current-year');
-        const mainAddFileButton = document.getElementById('main-add-file-button');
-        
-        // Modals
-        const instructionModal = document.getElementById('instruction-modal');
-        const addFileModal = document.getElementById('add-file-modal');
-
-        // --- RENDER FUNCTIONS ---
-        function renderBreadcrumbs() {
-            breadcrumbsContainer.innerHTML = `<a href="#" class="text-indigo-600 hover:underline" data-level="-1">Home</a>`;
-            state.path.forEach((segment, index) => {
-                breadcrumbsContainer.innerHTML += ` <span class="mx-2 text-gray-500">/</span> <a href="#" class="text-indigo-600 hover:underline" data-level="${index}">${segment}</a>`;
-            });
-        }
-
-        function renderFolders(items, type) {
-            initialLoadingContainer.classList.add('hidden');
-            let folderHTML = items.length > 0 ? items.map(item => `
-                <div class="folder bg-white p-4 rounded-lg shadow-md text-center cursor-pointer flex flex-col items-center justify-center" data-type="${type}" data-name="${item}">
-                    <i class="fas fa-folder text-6xl text-yellow-400 mb-2"></i>
-                    <span class="font-semibold text-gray-700 break-words">${item}</span>
-                </div>
-            `).join('') : `<p class="text-gray-500 col-span-full text-center py-10">No folders found. Upload a file to create the necessary folders.</p>`;
-            contentArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">${folderHTML}</div>`;
-        }
-
-        function renderFiles(files) {
-            const fileListHtml = files.length > 0 ? files.map(file => `
-                <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div class="flex items-start min-w-0">
-                        <i class="fas ${getFileIcon(file.fileName).icon} text-3xl ${getFileIcon(file.fileName).color} mr-4 mt-1"></i>
-                        <div class="min-w-0">
-                            <p class="font-semibold text-gray-800 truncate" title="${file.fileName}">${file.fileName}</p>
-                            <p class="text-sm text-gray-600 mt-1">${file.caption || 'No caption provided.'}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-end flex-shrink-0 gap-3">
-                         <span class="text-sm text-gray-500">${new Date(file.createdAt?.toDate()).toLocaleDateString()}</span>
-                        <a href="${file.downloadUrl || '#'}" target="_blank" class="download-btn bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600 transition-colors flex items-center ${!file.downloadUrl ? 'cursor-not-allowed bg-gray-400' : ''}" title="${!file.downloadUrl ? 'No download link available' : 'Download file'}">
-                            <i class="fas fa-download mr-2"></i> Download
-                        </a>
-                    </div>
-                </div>
-            `).join('') : `<p class="text-gray-500 text-center py-10">No files found in this folder.</p>`;
-
-            initialLoadingContainer.classList.add('hidden');
-            contentArea.innerHTML = `<div class="space-y-4">${fileListHtml}</div>`;
-        }
-        
-        // --- DYNAMIC FOLDER & FILE LOGIC ---
-        async function fetchAndRenderDynamicFolders(currentPath, fieldToFetch) {
-            if (!db) return;
-            initialLoadingContainer.classList.remove('hidden');
-            contentArea.innerHTML = ''; // Clear previous content
-
-            const pathFields = ['degree', 'batch', 'year'];
-            const constraints = currentPath.map((segment, index) => where(pathFields[index], "==", segment));
-            const q = query(papersCollection, ...constraints);
-            
-            try {
-                const querySnapshot = await getDocs(q);
-                const items = new Set();
-                querySnapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data[fieldToFetch]) {
-                        items.add(data[fieldToFetch]);
-                    }
-                });
-                renderFolders(Array.from(items).sort(), fieldToFetch);
-            } catch (error) {
-                console.error(`Error fetching ${fieldToFetch}:`, error);
-                contentArea.innerHTML = `<p class="text-red-500 text-center">Could not load folders. Please check database permissions.</p>`;
-            }
-        }
-
-        async function renderView() {
-            renderBreadcrumbs();
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-            
-            const pathLength = state.path.length;
-            if (pathLength === 0) {
-                renderFolders(['BSc Physics', 'MSc Physics', 'PhD Physics'], 'degree');
-            } else if (pathLength === 1) {
-                await fetchAndRenderDynamicFolders(state.path, 'batch');
-            } else if (pathLength === 2) {
-                await fetchAndRenderDynamicFolders(state.path, 'year');
-            } else if (pathLength === 3) {
-                await fetchAndRenderDynamicFolders(state.path, 'semester');
-            } else if (pathLength === 4) {
-                listenForFiles();
-            }
-        }
-
-        function listenForFiles() {
-            if (!db) return;
-            contentArea.innerHTML = '';
-            initialLoadingContainer.classList.remove('hidden');
-            loadingMessage.textContent = 'Loading files...';
-
-            const [degree, batch, year, semester] = state.path;
-            const q = query(papersCollection,
-                where("degree", "==", degree), where("batch", "==", batch),
-                where("year", "==", year), where("semester", "==", semester)
-            );
-
-            unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-                const files = [];
-                snapshot.forEach((doc) => files.push({ id: doc.id, ...doc.data() }));
-                files.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-                renderFiles(files);
-            }, (error) => {
-                console.error("Error fetching files:", error);
-                contentArea.innerHTML = `<p class="text-red-500 text-center">Error loading files.</p>`;
-                initialLoadingContainer.classList.add('hidden');
-            });
-        }
-
-        // --- MODAL & FORM HANDLING ---
-        function setupModal(modal, openTriggers, closeTriggers) {
-            openTriggers.forEach(trigger => trigger?.addEventListener('click', (e) => { e.preventDefault(); modal.classList.remove('hidden'); }));
-            closeTriggers.forEach(trigger => trigger?.addEventListener('click', () => modal.classList.add('hidden')));
-        }
-        
-        // --- INITIALIZATION & EVENT LISTENERS ---
-        async function main() {
-            currentYearSpan.textContent = new Date().getFullYear();
-            
-            if (!localStorage.getItem('archiveVisited')) {
-                instructionModal.classList.remove('hidden');
-                localStorage.setItem('archiveVisited', 'true');
-            }
-            
-            setupModal(instructionModal, [], [document.getElementById('instruction-close-btn')]);
-            setupModal(addFileModal, [mainAddFileButton], [document.getElementById('add-file-cancel-btn')]);
-
-            contentArea.addEventListener('click', e => {
-                const folderTarget = e.target.closest('[data-type]');
-                if (folderTarget) handleNavigation(folderTarget);
-            });
-            
-            breadcrumbsContainer.addEventListener('click', e => {
-                const breadcrumbTarget = e.target.closest('[data-level]');
-                if (breadcrumbTarget) handleNavigation(breadcrumbTarget);
-            });
-
-            document.getElementById('add-file-form').addEventListener('submit', handleAddFile);
-
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                papersCollection = collection(db, `/artifacts/${appId}/public/data/papers`);
-                
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("Authenticated successfully with UID:", userId);
-                        mainAddFileButton.classList.remove('hidden'); // Show add button once logged in
-                        renderView();
-                    }
-                });
-                
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) await signInWithCustomToken(auth, token);
-                else await signInAnonymously(auth);
-
-            } catch (error) {
-                console.error("Fatal Initialization Error:", error);
-                let errorMessage = 'Connection Failed. Please refresh the page.';
-                if (error.code === 'auth/operation-not-allowed') {
-                    errorMessage = 'Connection Error: Anonymous sign-in is not enabled for this project. Please go to the Firebase console > Authentication > Sign-in method, and enable the Anonymous provider.';
-                }
-                loadingMessage.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i><br>${errorMessage}`;
-                loadingMessage.classList.add('text-red-500', 'font-semibold');
-            }
-        }
-        
-        // --- ACTION HANDLERS ---
-        function handleNavigation(target) {
-            if (target.dataset.level) {
-                const level = parseInt(target.dataset.level, 10);
-                state.path = (level === -1) ? [] : state.path.slice(0, level + 1);
-            } else {
-                state.path.push(target.dataset.name);
-            }
-            renderView();
-        }
-
-        async function handleAddFile(e) {
-            e.preventDefault();
-            const form = e.target;
-            const degree = form.elements['degree'].value;
-            const batch = form.elements['batch'].value.trim();
-            const year = form.elements['year'].value.trim();
-            const semester = form.elements['semester'].value;
-            const caption = form.elements['caption'].value.trim();
-            const file = form.elements['file-upload-input'].files[0];
-
-            if (!file || !batch || !year) { alert("Please fill all required fields and select a file."); return; }
-            if (!userId) { alert("Not authenticated. Please wait and try again."); return; }
-
-            try {
-                await addDoc(papersCollection, {
-                    degree, batch, year, semester, caption,
-                    fileName: file.name, fileType: file.type, fileSize: file.size,
-                    uploaderId: userId,
-                    createdAt: serverTimestamp(),
-                    // In a real app, you'd upload the file to Firebase Storage and save the URL here.
-                    // For this demo, we'll use a placeholder.
-                    downloadUrl: 'https://www.gndu.ac.in/document/syllabus2023/bscphysics.pdf'
-                });
-                addFileModal.classList.add('hidden');
-                form.reset();
-                // Navigate to the folder where the file was uploaded
-                state.path = [degree, batch, year, semester];
-                renderView();
-            } catch (error) {
-                console.error("Error uploading file:", error);
-                alert("Failed to upload file. Check console for details.");
-            }
-        }
-
-        function getFileIcon(fileName) {
-            const ext = fileName.split('.').pop().toLowerCase();
-            switch (ext) {
-                case 'pdf': return { icon: 'fa-file-pdf', color: 'text-red-500' };
-                case 'doc': case 'docx': return { icon: 'fa-file-word', color: 'text-blue-500' };
-                case 'ppt': case 'pptx': return { icon: 'fa-file-powerpoint', color: 'text-orange-500' };
-                default: return { icon: 'fa-file', color: 'text-gray-500' };
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', main);
-    </script>
-
-    <!-- Header -->
-    <header class="bg-white shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Department of Physics</h1>
-                <p class="text-lg text-gray-600">Exam Paper Archive</p>
-            </div>
-            <button id="main-add-file-button" class="hidden bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center">
-                <i class="fas fa-plus mr-2"></i> Add New File
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container mx-auto px-6 py-8">
-        <div id="breadcrumbs" class="mb-6 text-sm font-medium"></div>
-        <div id="initial-loading-container">
-            <div class="text-center">
-                <p id="loading-message" class="mt-2 text-gray-600 p-4">
-                    <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i><br>
-                    Connecting to Archive...
-                </p>
-            </div>
-        </div>
-        <div id="content-area"></div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white mt-12 py-6 border-t">
-        <div class="container mx-auto px-6 text-center text-gray-600">
-            <p>&copy; <span id="current-year"></span> Department of Physics. All Rights Reserved.</p>
-        </div>
-    </footer>
+<body class="bg-gray-100 min-h-screen text-gray-900">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-4 text-center">Department of Physics - Exam Archive</h1>
 
     <!-- Instruction Modal -->
-    <div id="instruction-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Welcome to the Archive!</h3>
-            <div class="text-gray-600 space-y-3">
-                <p>This is a collaborative archive. To contribute, click the <strong class="text-indigo-600">'Add New File'</strong> button at the top right.</p>
-                <p class="font-semibold">How it works:</p>
-                <ol class="list-decimal list-inside space-y-2 pl-2">
-                    <li>Click <strong class="text-indigo-600">'Add New File'</strong>.</li>
-                    <li>Fill out the form with the correct <strong class="text-indigo-600">Degree, Batch, Year, and Semester</strong> for your file.</li>
-                    <li>Select your file and add a descriptive caption.</li>
-                    <li>When you upload, the folders (e.g., your Batch) will be <strong class="text-indigo-600">created automatically</strong> if they don't already exist.</li>
-                </ol>
-            </div>
-            <div class="mt-6 text-right">
-                <button id="instruction-close-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-md hover:bg-indigo-700">Got it!</button>
-            </div>
-        </div>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+      <p class="font-bold">Instructions for Uploading:</p>
+      <p>To contribute exam papers, please follow the structure:</p>
+      <ul class="list-disc ml-6 mt-2">
+        <li>Select <strong>Degree</strong></li>
+        <li>Create/select <strong>Batch Year</strong></li>
+        <li>Create/select <strong>Semester</strong></li>
+        <li>Upload file with a proper caption</li>
+      </ul>
     </div>
 
-    <!-- Add File Modal -->
-    <div id="add-file-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Add a New File to the Archive</h3>
-            <form id="add-file-form" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="add-file-degree" class="block text-sm font-medium text-gray-700">Degree</label>
-                        <select id="add-file-degree" name="degree" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option>BSc Physics</option>
-                            <option>MSc Physics</option>
-                            <option>PhD Physics</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="add-file-batch" class="block text-sm font-medium text-gray-700">Batch</label>
-                        <input type="text" id="add-file-batch" name="batch" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 2021-2025">
-                    </div>
-                    <div>
-                        <label for="add-file-year" class="block text-sm font-medium text-gray-700">Year of Exam</label>
-                        <input type="number" id="add-file-year" name="year" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 2023">
-                    </div>
-                    <div>
-                        <label for="add-file-semester" class="block text-sm font-medium text-gray-700">Semester</label>
-                        <select id="add-file-semester" name="semester" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option>1</option> <option>2</option> <option>3</option> <option>4</option> <option>5</option> <option>6</option> <option>7</option> <option>8</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-span-full">
-                    <label for="file-caption-input" class="block text-sm font-medium text-gray-700">Caption</label>
-                    <input type="text" id="file-caption-input" name="caption" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., Mid-Term Exam Paper 2024">
-                </div>
-                <div class="col-span-full">
-                    <label for="file-upload-input" class="block text-sm font-medium text-gray-700">Select File</label>
-                    <input type="file" id="file-upload-input" name="file-upload-input" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                </div>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" id="add-file-cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700">Upload File</button>
-                </div>
-            </form>
+    <!-- Upload Section -->
+    <div class="bg-white p-6 rounded shadow mb-6">
+      <h2 class="text-xl font-semibold mb-4">Upload Exam Paper</h2>
+      <form id="uploadForm" class="space-y-4">
+        <div>
+          <label class="block font-medium">Degree:</label>
+          <input type="text" id="degree" required class="w-full p-2 border rounded" placeholder="e.g., B.Sc, M.Sc" />
         </div>
+        <div>
+          <label class="block font-medium">Batch Year:</label>
+          <input type="text" id="batch" required class="w-full p-2 border rounded" placeholder="e.g., 2022" />
+        </div>
+        <div>
+          <label class="block font-medium">Semester:</label>
+          <input type="text" id="semester" required class="w-full p-2 border rounded" placeholder="e.g., Sem 1" />
+        </div>
+        <div>
+          <label class="block font-medium">Caption:</label>
+          <input type="text" id="caption" required class="w-full p-2 border rounded" placeholder="e.g., Quantum Mechanics Final 2023" />
+        </div>
+        <div>
+          <label class="block font-medium">Choose File (PDF only):</label>
+          <input type="file" id="fileInput" accept="application/pdf" required />
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
+      </form>
     </div>
 
+    <!-- Files Display Section -->
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Available Papers</h2>
+      <ul id="fileList" class="space-y-2"></ul>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
+      authDomain: "gndu-phys.firebaseapp.com",
+      databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
+      projectId: "gndu-phys",
+      storageBucket: "gndu-phys.appspot.com",
+      messagingSenderId: "527351049402",
+      appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
+      measurementId: "G-WQGP6DHMSL"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
+
+    const uploadForm = document.getElementById("uploadForm");
+    const fileList = document.getElementById("fileList");
+
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const degree = document.getElementById("degree").value.trim();
+      const batch = document.getElementById("batch").value.trim();
+      const semester = document.getElementById("semester").value.trim();
+      const caption = document.getElementById("caption").value.trim();
+      const file = document.getElementById("fileInput").files[0];
+
+      if (!file) return alert("Please select a file");
+
+      const path = `${degree}/${batch}/${semester}/${caption}.pdf`;
+      const storageRef = storage.ref(path);
+      await storageRef.put(file);
+      alert("Upload successful!");
+      listAllFiles();
+    });
+
+    async function listAllFiles() {
+      fileList.innerHTML = "";
+      const degree = document.getElementById("degree").value.trim();
+      if (!degree) return;
+
+      const listRef = storage.ref().child(degree);
+      try {
+        const result = await listRef.listAll();
+        for (const folderRef of result.prefixes) {
+          const subResult = await folderRef.listAll();
+          for (const semRef of subResult.prefixes) {
+            const fileResult = await semRef.listAll();
+            for (const itemRef of fileResult.items) {
+              const url = await itemRef.getDownloadURL();
+              const listItem = document.createElement("li");
+              listItem.innerHTML = `
+                <div class="flex justify-between items-center border p-2 rounded">
+                  <span>${itemRef.name.replace('.pdf', '')}</span>
+                  <a href="${url}" target="_blank" class="text-blue-600 underline">Download</a>
+                </div>`;
+              fileList.appendChild(listItem);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error listing files:", error);
+      }
+    }
+  </script>
 </body>
 </html>
