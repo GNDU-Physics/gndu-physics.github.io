@@ -35,11 +35,13 @@
         import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURATION ---
+        // Corrected Firebase config to match user's provided details exactly.
         const firebaseConfig = {
             apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
             authDomain: "gndu-phys.firebaseapp.com",
+            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
             projectId: "gndu-phys",
-            storageBucket: "gndu-phys.appspot.com",
+            storageBucket: "gndu-phys.firebasestorage.app",
             messagingSenderId: "527351049402",
             appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
             measurementId: "G-WQGP6DHMSL"
