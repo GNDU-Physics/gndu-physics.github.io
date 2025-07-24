@@ -187,6 +187,12 @@
             const file = event.target.files[0];
             if (!file || !db) return;
 
+            // Prevent upload if user is not authenticated yet
+            if (!userId) {
+                showNotification('Authentication Required', 'You must be signed in to upload files. Please wait a moment and try again.', true);
+                return;
+            }
+
             const [degree, batch, year, semester] = state.path;
 
             try {
@@ -259,30 +265,36 @@
         async function main() {
             currentYearSpan.textContent = new Date().getFullYear();
             
+            // Initialize Firebase
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
             setLogLevel('debug'); // Enable detailed Firestore logging for debugging
             papersCollection = collection(db, `/artifacts/${appId}/public/data/papers`);
 
+            // Setup event listeners
             contentArea.addEventListener('click', handleNavigation);
             breadcrumbsContainer.addEventListener('click', handleNavigation);
             fileUploader.addEventListener('change', handleFileUpload);
             modalCloseButton.addEventListener('click', () => notificationModal.classList.add('hidden'));
-
             contentArea.addEventListener('click', e => {
                 if (e.target.closest('#upload-button')) fileUploader.click();
             });
 
+            // *** FIX: Render the initial UI immediately without waiting for auth ***
+            render();
+
+            // Listen for authentication state changes in the background
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    console.log("Authenticated successfully with UID:", user.uid);
                     userId = user.uid;
-                    if (state.path.length === 0) { // Only render on initial auth
-                       render();
-                    }
+                } else {
+                    userId = null;
                 }
             });
             
+            // Attempt to sign in anonymously in the background
             try {
                 const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                 if (token) {
@@ -291,9 +303,9 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Authentication failed:", error);
-                loadingIndicator.classList.add('hidden');
-                contentArea.innerHTML = `<p class="text-red-500 text-center">Could not authenticate with the server. Please check your connection and Firebase setup.</p>`;
+                console.error("Background authentication failed:", error);
+                // The UI is already visible, so we just log the error.
+                // We could show a non-blocking notification if needed.
             }
         }
 
