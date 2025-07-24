@@ -2,283 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GNDU Physics Club</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+  <link href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Open+Sans&display=swap' rel='stylesheet'>
   <style>
     body {
       font-family: 'Open Sans', sans-serif;
+      background: #f6f0e8;
       margin: 0;
       padding: 0;
-      background-color: #eae4d9;
+      color: #3b2f2f;
     }
-    .window {
-      max-width: 1024px;
-      margin: 50px auto;
-      border: 3px dashed #a87544;
-      background-color: #fdfaf4;
-      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
-      border-radius: 12px;
-    }
-    .titlebar {
-      background-color: #d1bfa4;
-      color: #3d2b1f;
-      padding: 12px 18px;
-      font-family: 'Crimson Text', serif;
-      font-weight: bold;
-      font-size: 20px;
+    header {
+      background-color: #e8d8c3;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
-    .titlebar nav a {
-      margin-left: 12px;
-      color: #3d2b1f;
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      margin: 0;
+      color: #3b2f2f;
+    }
+    nav a {
+      margin-left: 1.5rem;
       text-decoration: none;
-      font-size: 14px;
+      color: #5e473b;
+      font-weight: 600;
+      transition: color 0.3s;
     }
-    .titlebar nav a:hover {
-      text-decoration: underline;
+    nav a:hover {
+      color: #a9744f;
     }
-    .content {
-      padding: 20px;
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+      border: 2px dashed #c2a47b;
     }
     h2 {
-      font-family: 'Crimson Text', serif;
-      color: #5a3e2b;
-      font-size: 22px;
+      font-family: 'Playfair Display', serif;
+      color: #4a3b33;
+      font-size: 1.5rem;
       margin-top: 0;
     }
-    .form-calendar-wrapper {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 20px;
+    p {
+      line-height: 1.7;
     }
-    form {
-      background-color: #f8f3eb;
-      padding: 15px;
-      border: 2px dashed #c4a375;
-      flex: 1 1 45%;
-      min-width: 300px;
-      border-radius: 10px;
-      box-sizing: border-box;
+    .calendar {
+      margin-top: 2rem;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
-    input, textarea {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 14px;
-      width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-      border: 2px solid #d1bfa4;
-      border-radius: 6px;
-      background-color: #fff;
-      box-sizing: border-box;
+    .fc-toolbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem !important;
+      color: #50392d;
     }
-    button {
-      background-color: #b48c5e;
-      border: none;
-      font-family: 'Open Sans', sans-serif;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-      padding: 10px;
-      margin-top: 10px;
-      width: 100%;
-      border-radius: 6px;
-    }
-    button:hover {
-      background-color: #a2754b;
-    }
-    #calendar {
-      border: 2px dashed #c4a375;
-      background-color: #fff;
-      padding: 10px;
-      flex: 1 1 45%;
-      max-width: 500px;
-      min-width: 300px;
-      border-radius: 10px;
-      box-sizing: border-box;
-    }
-    .fc .fc-button {
-      background-color: #d1bfa4 !important;
+    .fc-button {
+      background: #d7c3a1 !important;
       border: none !important;
-      font-family: 'Open Sans', sans-serif !important;
-      color: #3d2b1f !important;
-      font-weight: bold;
-      text-shadow: none !important;
-      border-radius: 4px !important;
+      color: #3b2f2f !important;
+      border-radius: 8px !important;
+      padding: 0.4em 0.8em !important;
+      margin: 2px !important;
+      font-weight: 600 !important;
     }
-    .fc .fc-button:hover {
-      background-color: #c7ae91 !important;
+    .fc-button:hover {
+      background: #c7b08c !important;
+    }
+    .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active {
+      background: #b89d78 !important;
     }
     footer {
       text-align: center;
-      padding: 10px;
-      font-size: 12px;
-      color: #5e4a3b;
-    }
-    #popup {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fdfaf4;
-      border: 2px dashed #a87544;
-      padding: 20px;
-      z-index: 1000;
-      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
-      border-radius: 12px;
-      width: 300px;
-    }
-    #popup button {
-      width: 48%;
-      margin-right: 2%;
-    }
-    #popup input {
-      margin-top: 10px;
+      margin-top: 3rem;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #7a6a58;
     }
   </style>
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
 </head>
 <body>
-  <div class="window">
-    <div class="titlebar">
-      <span>GNDU Physics Club – Talks Registration</span>
-      <nav><a href="https://github.com/GNDU-Physics/">GitHub</a></nav>
-    </div>
-    <div class="content">
-      <h2>Register Your Physics Talk</h2>
-      <div class="form-calendar-wrapper">
-        <form id="talkForm">
-          <input type="text" id="name" placeholder="Your Name" required />
-          <input type="text" id="semester" placeholder="Semester (e.g., MSc 1st)" required />
-          <textarea id="topic" placeholder="Talk Topic (e.g., Quantum Tunneling Simulations)" required></textarea>
-          <input type="date" id="date" required />
-          <button type="submit">Submit Talk</button>
-        </form>
-        <div id="calendar"></div>
-      </div>
-    </div>
-    <footer>© GNDU Physics Club, 2025.</footer>
-  </div>
+  <header>
+    <h1>GNDU Physics Club</h1>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#computational">Computational</a>
+      <a href="#resources">Resources</a>
+      <a href="#talks">Talks</a>
+    </nav>
+  </header>
+  <main class="container">
+    <section id="about">
+      <h2>About</h2>
+      <p>The GNDU Physics Club fosters interest in physics through lectures, coding projects, and resources. We provide a space for collaboration and learning within the physics community at GNDU.</p>
+    </section>
 
-  <div id="popup">
-    <h3 id="popupTitle"></h3>
-    <p id="popupDetails"></p>
-    <input type="password" id="passwordInput" placeholder="Enter password to delete" />
-    <br>
-    <button onclick="confirmDelete()">🗑 Delete</button>
-    <button onclick="closePopup()">❌ Cancel</button>
-  </div>
+    <section id="computational">
+      <h2>Computational Projects</h2>
+      <p>We host a range of simulations and research projects. View them on our <a href="https://github.com/pyastrolab" target="_blank" style="color:#a9744f; text-decoration:underline;">GitHub</a>.</p>
+    </section>
 
+    <section id="resources">
+      <h2>Resources</h2>
+      <p>Access tutorials, problem sets, and open-source tools curated by our members.</p>
+    </section>
+
+    <section id="talks">
+      <h2>Student Talks Calendar</h2>
+      <div id='calendar' class="calendar"></div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 GNDU Physics Club. Designed with a cozy touch.
+  </footer>
+
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
-      authDomain: "gndu-phys.firebaseapp.com",
-      databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
-      projectId: "gndu-phys",
-      storageBucket: "gndu-phys.firebasestorage.app",
-      messagingSenderId: "527351049402",
-      appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
-      measurementId: "G-WQGP6DHMSL"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const calendarEl = document.getElementById('calendar');
-    let calendar;
-    let currentEvent = null;
-
-    function fetchEvents(callback) {
-      db.ref('talks').once('value', snapshot => {
-        const data = snapshot.val();
-        const events = [];
-        for (let key in data) {
-          events.push({ ...data[key], id: key });
-        }
-        callback(events);
-      });
-    }
-
-    function addEventToFirebase(eventData) {
-      db.ref('talks').push(eventData);
-    }
-
-    function deleteEventFromFirebase(id) {
-      db.ref('talks/' + id).remove();
-    }
-
-    function showPopup(info) {
-      currentEvent = info.event;
-      document.getElementById('popupTitle').textContent = "Talk Details";
-      document.getElementById('popupDetails').innerHTML = `
-        <strong>Date:</strong> ${currentEvent.start.toISOString().split('T')[0]}<br>
-        <strong>Info:</strong><br>${currentEvent.title.replace(/\n/g, "<br>")}
-      `;
-      document.getElementById('passwordInput').value = '';
-      document.getElementById('popup').style.display = 'block';
-    }
-
-    function closePopup() {
-      currentEvent = null;
-      document.getElementById('popup').style.display = 'none';
-    }
-
-    function confirmDelete() {
-      const password = document.getElementById('passwordInput').value;
-      if (password === 'astrodingra') {
-        deleteEventFromFirebase(currentEvent.id);
-        currentEvent.remove();
-        closePopup();
-        alert('Talk deleted successfully.');
-      } else {
-        alert('Incorrect password!');
-      }
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
-      fetchEvents(function(events) {
-        calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          height: 500,
-          events: events,
-          eventMouseEnter: function(info) {
-            info.el.style.cursor = 'pointer';
+      var calendarEl = document.getElementById('calendar');
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 500,
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        },
+        events: [
+          {
+            title: 'Quantum Mechanics Talk - Amandeep (Sem 6)',
+            start: '2025-08-05'
           },
-          eventClick: function(info) {
-            showPopup(info);
+          {
+            title: 'Cosmology Overview - Kiran (Sem 4)',
+            start: '2025-08-10'
           }
-        });
-        calendar.render();
+        ]
       });
-
-      document.getElementById('talkForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;
-        const semester = document.getElementById('semester').value;
-        const topic = document.getElementById('topic').value;
-        const date = document.getElementById('date').value;
-
-        const newEvent = {
-          title: `${name} (${semester})\n${topic}`,
-          start: date
-        };
-
-        const ref = db.ref('talks').push();
-        newEvent.id = ref.key;
-        ref.set(newEvent);
-
-        calendar.addEvent(newEvent);
-        this.reset();
-      });
+      calendar.render();
     });
   </script>
 </body>
