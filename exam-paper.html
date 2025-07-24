@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Department - Exam Paper Archive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .card-hover-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <h1 class="text-3xl font-bold text-gray-900">Department of Physics</h1>
+            <p class="text-lg text-gray-600">Exam Paper Archive</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+
+        <!-- Filter Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Filter Papers</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Degree Filter -->
+                <div>
+                    <label for="degree" class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                    <select id="degree" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="all">All Degrees</option>
+                        <option value="BSc Physics">B.Sc. Physics</option>
+                        <option value="MSc Physics">M.Sc. Physics</option>
+                        <option value="PhD Physics">Ph.D. Physics</option>
+                    </select>
+                </div>
+
+                <!-- Batch Filter -->
+                <div>
+                    <label for="batch" class="block text-sm font-medium text-gray-700 mb-1">Batch</label>
+                    <select id="batch" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="all">All Batches</option>
+                        <option value="2020-2024">2020-2024</option>
+                        <option value="2021-2025">2021-2025</option>
+                        <option value="2022-2026">2022-2026</option>
+                        <option value="2023-2027">2023-2027</option>
+                    </select>
+                </div>
+
+                <!-- Year Filter -->
+                <div>
+                    <label for="year" class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                    <select id="year" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="all">All Years</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+
+                <!-- Semester Filter -->
+                <div>
+                    <label for="semester" class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                    <select id="semester" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="all">All Semesters</option>
+                        <option value="1">1st</option>
+                        <option value="2">2nd</option>
+                        <option value="3">3rd</option>
+                        <option value="4">4th</option>
+                        <option value="5">5th</option>
+                        <option value="6">6th</option>
+                        <option value="7">7th</option>
+                        <option value="8">8th</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exam Papers Display Section -->
+        <div id="papers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Exam paper cards will be inserted here by JavaScript -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="no-results" class="hidden text-center py-12">
+            <h3 class="text-2xl font-semibold text-gray-700">No Exam Papers Found</h3>
+            <p class="text-gray-500 mt-2">Please try adjusting your filters.</p>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-white mt-12 py-6 border-t">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; <span id="current-year"></span> Department of Physics. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA ---
+        // Sample data for exam papers. In a real application, this would come from a database.
+        const examPapers = [
+            { id: 1, degree: 'BSc Physics', batch: '2021-2025', year: 2023, semester: 3, subject: 'Classical Mechanics', file: '#' },
+            { id: 2, degree: 'BSc Physics', batch: '2021-2025', year: 2023, semester: 3, subject: 'Optics', file: '#' },
+            { id: 3, degree: 'BSc Physics', batch: '2020-2024', year: 2023, semester: 5, subject: 'Quantum Mechanics I', file: '#' },
+            { id: 4, degree: 'MSc Physics', batch: '2022-2026', year: 2024, semester: 1, subject: 'Mathematical Physics', file: '#' },
+            { id: 5, degree: 'MSc Physics', batch: '2022-2026', year: 2024, semester: 1, subject: 'Advanced Electrodynamics', file: '#' },
+            { id: 6, degree: 'BSc Physics', batch: '2020-2024', year: 2024, semester: 6, subject: 'Statistical Mechanics', file: '#' },
+            { id: 7, degree: 'PhD Physics', batch: '2023-2027', year: 2024, semester: 1, subject: 'Research Methodology', file: '#' },
+            { id: 8, degree: 'BSc Physics', batch: '2022-2026', year: 2024, semester: 2, subject: 'Waves and Oscillations', file: '#' },
+            { id: 9, degree: 'MSc Physics', batch: '2021-2025', year: 2025, semester: 3, subject: 'Solid State Physics', file: '#' },
+            { id: 10, degree: 'BSc Physics', batch: '2023-2027', year: 2025, semester: 1, subject: 'Introduction to Physics', file: '#' },
+        ];
+
+        // --- ELEMENTS ---
+        const degreeFilter = document.getElementById('degree');
+        const batchFilter = document.getElementById('batch');
+        const yearFilter = document.getElementById('year');
+        const semesterFilter = document.getElementById('semester');
+        const papersContainer = document.getElementById('papers-container');
+        const noResultsMessage = document.getElementById('no-results');
+        const currentYearSpan = document.getElementById('current-year');
+
+        // --- FUNCTIONS ---
+
+        /**
+         * Renders the exam paper cards to the page based on a provided list of papers.
+         * @param {Array} papers - The array of paper objects to display.
+         */
+        function renderPapers(papers) {
+            // Clear the existing content
+            papersContainer.innerHTML = '';
+
+            if (papers.length === 0) {
+                // Show the "no results" message if the filtered list is empty
+                noResultsMessage.classList.remove('hidden');
+            } else {
+                // Hide the "no results" message
+                noResultsMessage.classList.add('hidden');
+                
+                // Create and append a card for each paper
+                papers.forEach(paper => {
+                    const card = `
+                        <div class="bg-white p-5 rounded-lg shadow-md card-hover-effect">
+                            <h3 class="text-xl font-semibold text-gray-800">${paper.subject}</h3>
+                            <div class="text-sm text-gray-500 mt-2">
+                                <p><strong>Degree:</strong> ${paper.degree}</p>
+                                <p><strong>Batch:</strong> ${paper.batch}</p>
+                                <p><strong>Year:</strong> ${paper.year} | <strong>Semester:</strong> ${paper.semester}</p>
+                            </div>
+                            <a href="${paper.file}" target="_blank" class="inline-block mt-4 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                                View Paper
+                            </a>
+                        </div>
+                    `;
+                    papersContainer.innerHTML += card;
+                });
+            }
+        }
+
+        /**
+         * Filters the exam papers based on the current selections in the dropdowns.
+         */
+        function filterAndRender() {
+            const selectedDegree = degreeFilter.value;
+            const selectedBatch = batchFilter.value;
+            const selectedYear = yearFilter.value;
+            const selectedSemester = semesterFilter.value;
+
+            const filteredPapers = examPapers.filter(paper => {
+                const degreeMatch = selectedDegree === 'all' || paper.degree === selectedDegree;
+                const batchMatch = selectedBatch === 'all' || paper.batch === selectedBatch;
+                const yearMatch = selectedYear === 'all' || paper.year.toString() === selectedYear;
+                const semesterMatch = selectedSemester === 'all' || paper.semester.toString() === selectedSemester;
+                
+                return degreeMatch && batchMatch && yearMatch && semesterMatch;
+            });
+
+            renderPapers(filteredPapers);
+        }
+
+        /**
+         * Initializes the application.
+         */
+        function initialize() {
+            // Set the current year in the footer
+            currentYearSpan.textContent = new Date().getFullYear();
+            
+            // Add event listeners to all filter dropdowns
+            [degreeFilter, batchFilter, yearFilter, semesterFilter].forEach(filter => {
+                filter.addEventListener('change', filterAndRender);
+            });
+
+            // Perform an initial render of all papers
+            renderPapers(examPapers);
+        }
+
+        // --- INITIALIZATION ---
+        // Run the initialize function when the DOM is fully loaded.
+        document.addEventListener('DOMContentLoaded', initialize);
+
+    </script>
+</body>
+</html>
