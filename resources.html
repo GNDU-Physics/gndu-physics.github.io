@@ -38,7 +38,6 @@
         const firebaseConfig = {
             apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
             authDomain: "gndu-phys.firebaseapp.com",
-            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
             projectId: "gndu-phys",
             storageBucket: "gndu-phys.appspot.com",
             messagingSenderId: "527351049402",
@@ -266,8 +265,13 @@
 
             } catch (error) {
                 console.error("Fatal Initialization Error:", error);
-                loadingMessage.textContent = 'Connection Failed. Please refresh the page.';
-                loadingMessage.classList.add('text-red-500');
+                let errorMessage = 'Connection Failed. Please refresh the page.';
+                // Check for specific authentication error
+                if (error.code === 'auth/operation-not-allowed') {
+                    errorMessage = 'Connection Error: Anonymous sign-in is not enabled for this project. Please enable it in your Firebase Authentication settings.';
+                }
+                loadingMessage.textContent = errorMessage;
+                loadingMessage.classList.add('text-red-500', 'font-semibold');
             }
         }
         
