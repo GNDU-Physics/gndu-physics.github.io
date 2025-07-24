@@ -1,285 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GNDU Physics Club</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Open Sans', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #eae4d9;
-    }
-    .window {
-      max-width: 1024px;
-      margin: 50px auto;
-      border: 3px dashed #a87544;
-      background-color: #fdfaf4;
-      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
-      border-radius: 12px;
-    }
-    .titlebar {
-      background-color: #d1bfa4;
-      color: #3d2b1f;
-      padding: 12px 18px;
-      font-family: 'Crimson Text', serif;
-      font-weight: bold;
-      font-size: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-    }
-    .titlebar nav a {
-      margin-left: 12px;
-      color: #3d2b1f;
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .titlebar nav a:hover {
-      text-decoration: underline;
-    }
-    .content {
-      padding: 20px;
-    }
-    h2 {
-      font-family: 'Crimson Text', serif;
-      color: #5a3e2b;
-      font-size: 22px;
-      margin-top: 0;
-    }
-    .form-calendar-wrapper {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    form {
-      background-color: #f8f3eb;
-      padding: 15px;
-      border: 2px dashed #c4a375;
-      flex: 1 1 45%;
-      min-width: 300px;
-      border-radius: 10px;
-      box-sizing: border-box;
-    }
-    input, textarea {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 14px;
-      width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-      border: 2px solid #d1bfa4;
-      border-radius: 6px;
-      background-color: #fff;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #b48c5e;
-      border: none;
-      font-family: 'Open Sans', sans-serif;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-      padding: 10px;
-      margin-top: 10px;
-      width: 100%;
-      border-radius: 6px;
-    }
-    button:hover {
-      background-color: #a2754b;
-    }
-    #calendar {
-      border: 2px dashed #c4a375;
-      background-color: #fff;
-      padding: 10px;
-      flex: 1 1 45%;
-      max-width: 500px;
-      min-width: 300px;
-      border-radius: 10px;
-      box-sizing: border-box;
-    }
-    .fc .fc-button {
-      background-color: #d1bfa4 !important;
-      border: none !important;
-      font-family: 'Open Sans', sans-serif !important;
-      color: #3d2b1f !important;
-      font-weight: bold;
-      text-shadow: none !important;
-      border-radius: 4px !important;
-    }
-    .fc .fc-button:hover {
-      background-color: #c7ae91 !important;
-    }
-    footer {
-      text-align: center;
-      padding: 10px;
-      font-size: 12px;
-      color: #5e4a3b;
-    }
-    #popup {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fdfaf4;
-      border: 2px dashed #a87544;
-      padding: 20px;
-      z-index: 1000;
-      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
-      border-radius: 12px;
-      width: 300px;
-    }
-    #popup button {
-      width: 48%;
-      margin-right: 2%;
-    }
-    #popup input {
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div class="window">
-    <div class="titlebar">
-      <span>GNDU Physics Club – Talks Registration</span>
-      <nav><a href="https://github.com/GNDU-Physics/">GitHub</a></nav>
-    </div>
-    <div class="content">
-      <h2>Submit Your Physics Talk</h2>
-      <div class="form-calendar-wrapper">
-        <form id="talkForm">
-          <input type="text" id="name" placeholder="Your Name" required />
-          <input type="text" id="semester" placeholder="Semester (e.g., MSc 1st)" required />
-          <textarea id="topic" placeholder="Talk Topic (e.g., Quantum Tunneling Simulations)" required></textarea>
-          <input type="date" id="date" required />
-          <button type="submit">Submit Talk</button>
-        </form>
-        <div id="calendar"></div>
-      </div>
-    </div>
-    <footer>© GNDU Physics Club, 2025.</footer>
-  </div>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GNDU Physics Club | Talk Registration</title>
+    
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FullCalendar for the event display -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
-  <div id="popup">
-    <h3 id="popupTitle"></h3>
-    <p id="popupDetails"></p>
-    <input type="password" id="passwordInput" placeholder="Enter password to delete" />
-    <br>
-    <button onclick="confirmDelete()">🗑 Delete</button>
-    <button onclick="closePopup()">❌ Cancel</button>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
-      authDomain: "gndu-phys.firebaseapp.com",
-      databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
-      projectId: "gndu-phys",
-      storageBucket: "gndu-phys.firebasestorage.app",
-      messagingSenderId: "527351049402",
-      appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
-      measurementId: "G-WQGP6DHMSL"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const calendarEl = document.getElementById('calendar');
-    let calendar;
-    let currentEvent = null;
-
-    function fetchEvents(callback) {
-      db.ref('talks').once('value', snapshot => {
-        const data = snapshot.val();
-        const events = [];
-        for (let key in data) {
-          events.push({ ...data[key], id: key });
+    <!-- Custom Styles -->
+    <style>
+        /* Using a more modern and professional font pairing */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* A lighter, cleaner background */
         }
-        callback(events);
-      });
-    }
 
-    function addEventToFirebase(eventData) {
-      db.ref('talks').push(eventData);
-    }
+        h1, h2, h3, .fc-toolbar-title {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* Custom styles for FullCalendar to override Tailwind where necessary */
+        .fc {
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            background-color: white;
+        }
 
-    function deleteEventFromFirebase(id) {
-      db.ref('talks/' + id).remove();
-    }
+        .fc .fc-button {
+            background-color: #4f46e5 !important;
+            color: white !important;
+            border: none !important;
+            text-transform: capitalize;
+            border-radius: 0.375rem !important;
+            transition: background-color 0.3s;
+        }
 
-    function showPopup(info) {
-      currentEvent = info.event;
-      document.getElementById('popupTitle').textContent = "Talk Details";
-      document.getElementById('popupDetails').innerHTML = `
-        <strong>Date:</strong> ${currentEvent.start.toISOString().split('T')[0]}<br>
-        <strong>Info:</strong><br>${currentEvent.title.replace(/\n/g, "<br>")}
-      `;
-      document.getElementById('passwordInput').value = '';
-      document.getElementById('popup').style.display = 'block';
-    }
+        .fc .fc-button:hover {
+            background-color: #4338ca !important;
+        }
+        
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: #e0e7ff !important;
+        }
 
-    function closePopup() {
-      currentEvent = null;
-      document.getElementById('popup').style.display = 'none';
-    }
+        .fc-event {
+            cursor: pointer;
+            border: 1px solid #6d28d9 !important;
+            background-color: #8b5cf6 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
 
-    function confirmDelete() {
-      const password = document.getElementById('passwordInput').value;
-      if (password === 'astrodingra') {
-        deleteEventFromFirebase(currentEvent.id);
-        currentEvent.remove();
-        closePopup();
-        alert('Talk deleted successfully.');
-      } else {
-        alert('Incorrect password!');
-      }
-    }
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
+        
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">GNDU Physics Club</h1>
+            <p class="text-lg text-gray-600 mt-2">Weekly Talk Registrations</p>
+        </header>
 
-    document.addEventListener('DOMContentLoaded', function () {
-      fetchEvents(function(events) {
-        calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          height: 500,
-          events: events,
-          eventMouseEnter: function(info) {
-            info.el.style.cursor = 'pointer';
-          },
-          eventClick: function(info) {
-            showPopup(info);
-          }
-        });
-        calendar.render();
-      });
+        <!-- Main Content: Form and Calendar -->
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            
+            <!-- Registration Form Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-6">📅 Submit Your Talk</h2>
+                    <form id="talkForm" class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                            <input type="text" id="name" placeholder="e.g., Albert Einstein" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="semester" class="block text-sm font-medium text-gray-700">Semester</label>
+                            <input type="text" id="semester" placeholder="e.g., MSc 1st" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="topic" class="block text-sm font-medium text-gray-700">Talk Topic</label>
+                            <textarea id="topic" placeholder="e.g., General Theory of Relativity" required rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label for="date" class="block text-sm font-medium text-gray-700">Preferred Date</label>
+                            <input type="date" id="date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            Submit Talk
+                        </button>
+                    </form>
+                </div>
+            </div>
 
-      document.getElementById('talkForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;
-        const semester = document.getElementById('semester').value;
-        const topic = document.getElementById('topic').value;
-        const date = document.getElementById('date').value;
+            <!-- Calendar Section -->
+            <div id="calendar-container" class="lg:col-span-3 bg-white p-4 rounded-lg shadow-md">
+                <div id="calendar"></div>
+            </div>
 
-        const newEvent = {
-          title: `${name} (${semester})\n${topic}`,
-          start: date
+        </main>
+        
+        <!-- Footer -->
+        <footer class="text-center mt-12 py-4 border-t border-gray-200">
+            <p class="text-sm text-gray-500">&copy; 2025 GNDU Physics Club. All rights reserved.</p>
+            <a href="https://github.com/GNDU-Physics/" class="text-sm text-indigo-600 hover:text-indigo-800 mt-1 inline-block">View on GitHub</a>
+        </footer>
+    </div>
+
+    <!-- Modal/Popup for Event Details and Deletion -->
+    <div id="popup-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-40" onclick="closePopup()"></div>
+    <div id="popup" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl p-6 w-11/12 max-w-md hidden z-50">
+        <h3 id="popupTitle" class="text-xl font-bold mb-4">Talk Details</h3>
+        <div id="popupDetails" class="text-gray-700 mb-4 space-y-2"></div>
+        <div class="space-y-3">
+            <input type="password" id="passwordInput" placeholder="Enter admin password to delete" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="confirmDelete()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                    🗑️ Delete Talk
+                </button>
+                <button onclick="closePopup()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    ❌ Cancel
+                </button>
+            </div>
+        </div>
+        <!-- Custom Alert/Notification Box -->
+        <div id="notification" class="hidden mt-4 p-3 rounded-md text-sm"></div>
+    </div>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // IMPORTANT: Replace with your actual Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
+            authDomain: "gndu-phys.firebaseapp.com",
+            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
+            projectId: "gndu-phys",
+            storageBucket: "gndu-phys.firebasestorage.app",
+            messagingSenderId: "527351049402",
+            appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
+            measurementId: "G-WQGP6DHMSL"
         };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const talksRef = ref(db, 'talks');
 
-        const ref = db.ref('talks').push();
-        newEvent.id = ref.key;
-        ref.set(newEvent);
+        const calendarEl = document.getElementById('calendar');
+        let calendar;
+        let currentEvent = null;
+        
+        // --- Notification Function ---
+        function showNotification(message, isError = false) {
+            const notificationEl = document.getElementById('notification');
+            notificationEl.textContent = message;
+            notificationEl.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            
+            if (isError) {
+                notificationEl.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                notificationEl.classList.add('bg-green-100', 'text-green-700');
+            }
+            
+            notificationEl.classList.remove('hidden');
 
-        calendar.addEvent(newEvent);
-        this.reset();
-      });
-    });
-  </script>
+            setTimeout(() => {
+                notificationEl.classList.add('hidden');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Popup Functions ---
+        window.showPopup = function(info) {
+            currentEvent = info.event;
+            const popup = document.getElementById('popup');
+            const backdrop = document.getElementById('popup-backdrop');
+            
+            document.getElementById('popupTitle').textContent = "Talk Details";
+            document.getElementById('popupDetails').innerHTML = `
+                <p><strong>Topic:</strong> ${currentEvent.extendedProps.topic}</p>
+                <p><strong>Speaker:</strong> ${currentEvent.extendedProps.name}</p>
+                <p><strong>Semester:</strong> ${currentEvent.extendedProps.semester}</p>
+                <p><strong>Date:</strong> ${currentEvent.start.toISOString().split('T')[0]}</p>
+            `;
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('notification').classList.add('hidden'); // Hide old notifications
+            
+            popup.classList.remove('hidden');
+            backdrop.classList.remove('hidden');
+        }
+
+        window.closePopup = function() {
+            currentEvent = null;
+            document.getElementById('popup').classList.add('hidden');
+            document.getElementById('popup-backdrop').classList.add('hidden');
+        }
+
+        window.confirmDelete = function() {
+            const password = document.getElementById('passwordInput').value;
+            // IMPORTANT: This is a simple, insecure password check. 
+            // For a real application, use Firebase Authentication for proper security.
+            if (password === 'astrodingra') {
+                const eventId = currentEvent.id;
+                remove(ref(db, 'talks/' + eventId))
+                    .then(() => {
+                        console.log('Talk deleted successfully from Firebase.');
+                        // The onValue listener will automatically handle calendar updates.
+                        closePopup();
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting talk: ", error);
+                        showNotification('Failed to delete talk.', true);
+                    });
+            } else {
+                showNotification('Incorrect password!', true);
+            }
+        }
+
+        // --- DOMContentLoaded Listener ---
+        document.addEventListener('DOMContentLoaded', function() {
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                height: 'auto', // Responsive height
+                events: [], // Start with an empty array, will be populated by Firebase
+                eventClick: function(info) {
+                    showPopup(info);
+                }
+            });
+            calendar.render();
+
+            // Listen for real-time updates from Firebase
+            onValue(talksRef, (snapshot) => {
+                const data = snapshot.val();
+                const events = [];
+                for (let key in data) {
+                    const talk = data[key];
+                    events.push({
+                        id: key,
+                        title: talk.topic,
+                        start: talk.date,
+                        extendedProps: {
+                            name: talk.name,
+                            semester: talk.semester,
+                            topic: talk.topic
+                        }
+                    });
+                }
+                calendar.removeAllEvents(); // Clear existing events
+                calendar.addEventSource(events); // Add new events
+            });
+
+            // Handle form submission
+            document.getElementById('talkForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('name').value;
+                const semester = document.getElementById('semester').value;
+                const topic = document.getElementById('topic').value;
+                const date = document.getElementById('date').value;
+
+                const newTalkRef = push(talksRef);
+                
+                set(newTalkRef, {
+                    name: name,
+                    semester: semester,
+                    topic: topic,
+                    date: date
+                }).then(() => {
+                    console.log("Talk submitted successfully!");
+                    this.reset();
+                    // No need to manually add event, onValue will catch it.
+                }).catch((error) => {
+                    console.error("Error submitting talk: ", error);
+                    // You could add a user-facing error message here
+                });
+            });
+        });
+    </script>
 </body>
 </html>
