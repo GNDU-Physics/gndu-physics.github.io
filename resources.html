@@ -8,15 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .folder {
+        body { font-family: 'Inter', sans-serif; }
+        .folder, .add-folder {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            height: 120px; /* Ensure uniform height */
         }
-        .folder:hover {
+        .folder:hover, .add-folder:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        #initial-loading-container {
+            display: flex; justify-content: center; align-items: center; min-height: 40vh;
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -27,10 +32,9 @@
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, setLogLevel, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURATION ---
-        // Use the specific Firebase config provided by the user.
         const firebaseConfig = {
             apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
             authDomain: "gndu-phys.firebaseapp.com",
@@ -41,47 +45,27 @@
             appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
             measurementId: "G-WQGP6DHMSL"
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gndu-phys'; // Use projectId as fallback
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gndu-phys';
         
-        // --- FIREBASE INITIALIZATION ---
+        // --- FIREBASE & APP STATE ---
         let app, auth, db, papersCollection;
         let userId = null;
-        let unsubscribeSnapshot = null; // To store the snapshot listener
+        let unsubscribeSnapshot = null;
+        let state = { path: [], view: 'degrees' };
 
         // --- DOM ELEMENTS ---
         const contentArea = document.getElementById('content-area');
         const breadcrumbsContainer = document.getElementById('breadcrumbs');
-        const fileUploader = document.getElementById('file-uploader');
-        const loadingIndicator = document.getElementById('loading-indicator');
+        const initialLoadingContainer = document.getElementById('initial-loading-container');
+        const loadingMessage = document.getElementById('loading-message');
         const currentYearSpan = document.getElementById('current-year');
-        const notificationModal = document.getElementById('notification-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalIcon = document.getElementById('modal-icon');
-        const modalCloseButton = document.getElementById('modal-close-button');
-
-        // --- APP STATE ---
-        let state = {
-            path: [], // e.g., ['BSc Physics', '2021-2025', '2023', '3']
-            view: 'degrees', // degrees, batches, years, semesters, files
-        };
-
-        // Predefined folder structure
-        const FOLDER_STRUCTURE = {
-            'BSc Physics': {
-                '2021-2025': { '2023': ['3', '4'], '2024': ['5', '6'] },
-                '2022-2026': { '2024': ['1', '2'], '2025': ['3', '4'] }
-            },
-            'MSc Physics': {
-                '2023-2025': { '2024': ['1', '2'], '2025': ['3', '4'] }
-            },
-            'PhD Physics': {
-                '2023-2027': { '2024': ['1', '2'] }
-            }
-        };
+        
+        // Modals
+        const instructionModal = document.getElementById('instruction-modal');
+        const addFolderModal = document.getElementById('add-folder-modal');
+        const addFileModal = document.getElementById('add-file-modal');
 
         // --- RENDER FUNCTIONS ---
-
         function renderBreadcrumbs() {
             breadcrumbsContainer.innerHTML = `<a href="#" class="text-indigo-600 hover:underline" data-level="-1">Home</a>`;
             state.path.forEach((segment, index) => {
@@ -90,229 +74,279 @@
         }
 
         function renderFolders(items, type) {
-            contentArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">` +
-                items.map(item => `
-                    <div class="folder bg-white p-4 rounded-lg shadow-md text-center cursor-pointer flex flex-col items-center justify-center" data-type="${type}" data-name="${item}">
-                        <i class="fas fa-folder text-6xl text-yellow-400 mb-2"></i>
-                        <span class="font-semibold text-gray-700">${item}</span>
-                    </div>
-                `).join('') + `</div>`;
+            initialLoadingContainer.classList.add('hidden');
+            const folderTypeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            
+            let folderHTML = items.map(item => `
+                <div class="folder bg-white p-4 rounded-lg shadow-md text-center cursor-pointer flex flex-col items-center justify-center" data-type="${type}" data-name="${item}">
+                    <i class="fas fa-folder text-6xl text-yellow-400 mb-2"></i>
+                    <span class="font-semibold text-gray-700 break-words">${item}</span>
+                </div>
+            `).join('');
+
+            // Add the "Add Folder" button, but not for semesters
+            if (type !== 'semester') {
+                folderHTML += `
+                <div id="add-folder-button" class="add-folder bg-gray-200 border-2 border-dashed border-gray-400 p-4 rounded-lg text-center cursor-pointer flex flex-col items-center justify-center text-gray-600 hover:bg-gray-300 hover:border-gray-500">
+                    <i class="fas fa-plus text-5xl mb-2"></i>
+                    <span class="font-semibold">Add New ${folderTypeLabel}</span>
+                </div>`;
+            }
+
+            contentArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">${folderHTML}</div>`;
         }
 
         function renderFiles(files) {
-            let fileListHtml = files.length > 0 ? files.map(file => {
-                const fileIcon = getFileIcon(file.fileName);
-                return `
-                    <div class="bg-white p-3 rounded-md shadow-sm flex items-center justify-between">
-                        <div class="flex items-center min-w-0">
-                            <i class="fas ${fileIcon.icon} text-2xl ${fileIcon.color} mr-3"></i>
-                            <span class="font-medium text-gray-800 truncate" title="${file.fileName}">${file.fileName}</span>
+            const fileListHtml = files.length > 0 ? files.map(file => `
+                <div class="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex items-start min-w-0">
+                        <i class="fas ${getFileIcon(file.fileName).icon} text-3xl ${getFileIcon(file.fileName).color} mr-4 mt-1"></i>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-gray-800 truncate" title="${file.fileName}">${file.fileName}</p>
+                            <p class="text-sm text-gray-600 mt-1">${file.caption || 'No caption provided.'}</p>
                         </div>
-                        <span class="text-sm text-gray-500 flex-shrink-0 ml-2">${new Date(file.createdAt?.toDate()).toLocaleDateString()}</span>
-                    </div>`;
-            }).join('') : `<p class="text-gray-500">No files uploaded yet. Be the first to contribute!</p>`;
+                    </div>
+                    <div class="flex items-center justify-end flex-shrink-0 gap-3">
+                         <span class="text-sm text-gray-500">${new Date(file.createdAt?.toDate()).toLocaleDateString()}</span>
+                        <a href="#" class="download-btn bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600 transition-colors flex items-center">
+                            <i class="fas fa-download mr-2"></i> Download
+                        </a>
+                    </div>
+                </div>
+            `).join('') : `<p class="text-gray-500 text-center py-4">No files uploaded yet. Be the first to contribute!</p>`;
 
+            initialLoadingContainer.classList.add('hidden');
             contentArea.innerHTML = `
-                <div class="space-y-3">
-                    ${fileListHtml}
-                </div>
-                <div class="mt-6">
-                    <button id="upload-button" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center">
-                        <i class="fas fa-upload mr-2"></i> Upload File
+                <div class="space-y-4">${fileListHtml}</div>
+                <div class="mt-8">
+                    <button id="add-file-button" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-plus mr-2"></i> Add New File
                     </button>
-                </div>
-            `;
-        }
-
-        function render() {
-            renderBreadcrumbs();
-            loadingIndicator.classList.add('hidden');
-            contentArea.classList.remove('hidden');
-
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot(); // Detach old listener
-                unsubscribeSnapshot = null;
-            }
-
-            switch (state.view) {
-                case 'degrees':
-                    renderFolders(Object.keys(FOLDER_STRUCTURE), 'degree');
-                    break;
-                case 'batches':
-                    renderFolders(Object.keys(FOLDER_STRUCTURE[state.path[0]]), 'batch');
-                    break;
-                case 'years':
-                    renderFolders(Object.keys(FOLDER_STRUCTURE[state.path[0]][state.path[1]]), 'year');
-                    break;
-                case 'semesters':
-                    renderFolders(FOLDER_STRUCTURE[state.path[0]][state.path[1]][state.path[2]], 'semester');
-                    break;
-                case 'files':
-                    listenForFiles();
-                    break;
-            }
+                </div>`;
         }
         
-        // --- FIRESTORE LOGIC ---
+        // --- DYNAMIC FOLDER & FILE LOGIC ---
+        async function fetchAndRenderDynamicFolders(currentPath, fieldToFetch) {
+            if (!db) return;
+            initialLoadingContainer.classList.remove('hidden');
+            contentArea.innerHTML = '';
+
+            const constraints = [where("isPlaceholder", "==", true)];
+            const pathFields = ['degree', 'batch', 'year'];
+            currentPath.forEach((segment, index) => {
+                constraints.push(where(pathFields[index], "==", segment));
+            });
+            
+            const q = query(papersCollection, ...constraints);
+            const querySnapshot = await getDocs(q);
+            
+            const items = new Set();
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                if (data[fieldToFetch]) {
+                    items.add(data[fieldToFetch]);
+                }
+            });
+
+            // For semesters, use a predefined list as they are finite
+            if (fieldToFetch === 'semester') {
+                ['1', '2', '3', '4', '5', '6', '7', '8'].forEach(sem => items.add(sem));
+            }
+            
+            renderFolders(Array.from(items).sort(), fieldToFetch);
+        }
+
+        async function renderView() {
+            renderBreadcrumbs();
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            
+            const pathLength = state.path.length;
+            if (pathLength === 0) { // Degrees
+                renderFolders(['BSc Physics', 'MSc Physics', 'PhD Physics'], 'degree');
+            } else if (pathLength === 1) { // Batches
+                await fetchAndRenderDynamicFolders(state.path, 'batch');
+            } else if (pathLength === 2) { // Years
+                await fetchAndRenderDynamicFolders(state.path, 'year');
+            } else if (pathLength === 3) { // Semesters
+                await fetchAndRenderDynamicFolders(state.path, 'semester');
+            } else if (pathLength === 4) { // Files
+                listenForFiles();
+            }
+        }
 
         function listenForFiles() {
             if (!db) return;
-            contentArea.innerHTML = ''; // Clear content before showing loader
-            loadingIndicator.classList.remove('hidden');
+            contentArea.innerHTML = '';
+            initialLoadingContainer.classList.remove('hidden');
+            loadingMessage.textContent = 'Loading files...';
 
             const [degree, batch, year, semester] = state.path;
             const q = query(papersCollection,
-                where("degree", "==", degree),
-                where("batch", "==", batch),
-                where("year", "==", year),
-                where("semester", "==", semester)
+                where("degree", "==", degree), where("batch", "==", batch),
+                where("year", "==", year), where("semester", "==", semester),
+                where("isPlaceholder", "!=", true)
             );
 
-            unsubscribeSnapshot = onSnapshot(q, (querySnapshot) => {
+            unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
                 const files = [];
-                querySnapshot.forEach((doc) => {
-                    files.push({ id: doc.id, ...doc.data() });
-                });
+                snapshot.forEach((doc) => files.push({ id: doc.id, ...doc.data() }));
                 files.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-                loadingIndicator.classList.add('hidden');
                 renderFiles(files);
             }, (error) => {
-                console.error("Error fetching files: ", error);
-                contentArea.innerHTML = `<p class="text-red-500">Error loading files. Please try again.</p>`;
-                loadingIndicator.classList.add('hidden');
+                console.error("Error fetching files:", error);
+                contentArea.innerHTML = `<p class="text-red-500 text-center">Error loading files.</p>`;
+                initialLoadingContainer.classList.add('hidden');
             });
         }
+
+        // --- MODAL & FORM HANDLING ---
+        function setupModal(modal, openTriggers, closeTriggers) {
+            openTriggers.forEach(trigger => trigger?.addEventListener('click', (e) => { e.preventDefault(); modal.classList.remove('hidden'); }));
+            closeTriggers.forEach(trigger => trigger?.addEventListener('click', () => modal.classList.add('hidden')));
+        }
         
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file || !db) return;
-
-            // Prevent upload if user is not authenticated yet
-            if (!userId) {
-                showNotification('Authentication Required', 'You must be signed in to upload files. Please wait a moment and try again.', true);
-                return;
-            }
-
-            const [degree, batch, year, semester] = state.path;
-
-            try {
-                await addDoc(papersCollection, {
-                    degree,
-                    batch,
-                    year,
-                    semester,
-                    fileName: file.name,
-                    fileType: file.type,
-                    fileSize: file.size,
-                    uploaderId: userId,
-                    createdAt: serverTimestamp()
-                });
-                showNotification('Success', `File "${file.name}" metadata uploaded.`);
-            } catch (error) {
-                console.error("Error uploading file metadata: ", error);
-                showNotification('Upload Failed', 'Could not save file data. Please check the console for errors.', true);
+        // --- INITIALIZATION & EVENT LISTENERS ---
+        async function main() {
+            currentYearSpan.textContent = new Date().getFullYear();
+            
+            // Show instructions on first visit
+            if (!localStorage.getItem('archiveVisited')) {
+                instructionModal.classList.remove('hidden');
+                localStorage.setItem('archiveVisited', 'true');
             }
             
-            event.target.value = null; // Reset file input
-        }
+            // Setup Modals
+            setupModal(instructionModal, [], [document.getElementById('instruction-close-btn')]);
+            setupModal(addFolderModal, [], [document.getElementById('add-folder-cancel-btn')]);
+            setupModal(addFileModal, [], [document.getElementById('add-file-cancel-btn')]);
 
-        // --- UTILITY FUNCTIONS ---
-        function getFileIcon(fileName) {
-            const extension = fileName.split('.').pop().toLowerCase();
-            switch (extension) {
-                case 'pdf': return { icon: 'fa-file-pdf', color: 'text-red-500' };
-                case 'doc':
-                case 'docx': return { icon: 'fa-file-word', color: 'text-blue-500' };
-                case 'ppt':
-                case 'pptx': return { icon: 'fa-file-powerpoint', color: 'text-orange-500' };
-                case 'txt': return { icon: 'fa-file-alt', color: 'text-gray-500' };
-                default: return { icon: 'fa-file', color: 'text-gray-500' };
+            // Main content area event delegation
+            contentArea.addEventListener('click', e => {
+                const folderTarget = e.target.closest('[data-type]');
+                const addFolderBtn = e.target.closest('#add-folder-button');
+                const addFileBtn = e.target.closest('#add-file-button');
+                const downloadBtn = e.target.closest('.download-btn');
+
+                if (folderTarget) handleNavigation(folderTarget);
+                if (addFolderBtn) addFolderModal.classList.remove('hidden');
+                if (addFileBtn) addFileModal.classList.remove('hidden');
+                if (downloadBtn) {
+                    e.preventDefault();
+                    alert("Download functionality is for demonstration purposes.");
+                }
+            });
+            
+            breadcrumbsContainer.addEventListener('click', e => {
+                const breadcrumbTarget = e.target.closest('[data-level]');
+                if (breadcrumbTarget) handleNavigation(breadcrumbTarget);
+            });
+
+            // Form Submissions
+            document.getElementById('add-folder-form').addEventListener('submit', handleAddFolder);
+            document.getElementById('add-file-form').addEventListener('submit', handleAddFile);
+
+            // Firebase Init
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                papersCollection = collection(db, `/artifacts/${appId}/public/data/papers`);
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Authenticated successfully with UID:", userId);
+                        renderView();
+                    }
+                });
+                
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) await signInWithCustomToken(auth, token);
+                else await signInAnonymously(auth);
+
+            } catch (error) {
+                console.error("Fatal Initialization Error:", error);
+                loadingMessage.textContent = 'Connection Failed. Please refresh the page.';
+                loadingMessage.classList.add('text-red-500');
             }
         }
-
-        function showNotification(title, message, isError = false) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            if (isError) {
-                modalIcon.innerHTML = `<i class="fas fa-times text-2xl text-red-600"></i>`;
-                modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100';
-            } else {
-                modalIcon.innerHTML = `<i class="fas fa-check text-2xl text-green-600"></i>`;
-                modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100';
-            }
-            notificationModal.classList.remove('hidden');
-        }
-
-        // --- EVENT HANDLERS ---
-        function handleNavigation(e) {
-            const target = e.target.closest('[data-type], [data-level]');
-            if (!target) return;
-            e.preventDefault();
-
+        
+        // --- ACTION HANDLERS ---
+        function handleNavigation(target) {
             if (target.dataset.level) {
                 const level = parseInt(target.dataset.level, 10);
                 state.path = (level === -1) ? [] : state.path.slice(0, level + 1);
             } else {
                 state.path.push(target.dataset.name);
             }
-
-            const depth = state.path.length;
-            state.view = ['degrees', 'batches', 'years', 'semesters', 'files'][depth];
-            render();
+            renderView();
         }
-        
-        // --- INITIALIZATION ---
-        async function main() {
-            currentYearSpan.textContent = new Date().getFullYear();
-            
-            // Initialize Firebase
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            setLogLevel('debug'); // Enable detailed Firestore logging for debugging
-            papersCollection = collection(db, `/artifacts/${appId}/public/data/papers`);
 
-            // Setup event listeners
-            contentArea.addEventListener('click', handleNavigation);
-            breadcrumbsContainer.addEventListener('click', handleNavigation);
-            fileUploader.addEventListener('change', handleFileUpload);
-            modalCloseButton.addEventListener('click', () => notificationModal.classList.add('hidden'));
-            contentArea.addEventListener('click', e => {
-                if (e.target.closest('#upload-button')) fileUploader.click();
+        async function handleAddFolder(e) {
+            e.preventDefault();
+            const folderNameInput = document.getElementById('folder-name');
+            const folderName = folderNameInput.value.trim();
+            if (!folderName) return;
+
+            const placeholderData = { isPlaceholder: true };
+            const pathFields = ['degree', 'batch', 'year'];
+            state.path.forEach((segment, index) => {
+                placeholderData[pathFields[index]] = segment;
             });
+            placeholderData[pathFields[state.path.length]] = folderName;
 
-            // *** FIX: Render the initial UI immediately without waiting for auth ***
-            render();
-
-            // Listen for authentication state changes in the background
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    console.log("Authenticated successfully with UID:", user.uid);
-                    userId = user.uid;
-                } else {
-                    userId = null;
-                }
-            });
-            
-            // Attempt to sign in anonymously in the background
             try {
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    await signInWithCustomToken(auth, token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                await addDoc(papersCollection, placeholderData);
+                folderNameInput.value = '';
+                addFolderModal.classList.add('hidden');
+                renderView();
             } catch (error) {
-                console.error("Background authentication failed:", error);
-                // The UI is already visible, so we just log the error.
-                // We could show a non-blocking notification if needed.
+                console.error("Error creating folder:", error);
+                alert("Failed to create folder.");
+            }
+        }
+
+        async function handleAddFile(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-upload-input');
+            const captionInput = document.getElementById('file-caption-input');
+            const file = fileInput.files[0];
+            const caption = captionInput.value.trim();
+
+            if (!file) { alert("Please select a file."); return; }
+            if (!userId) { alert("Not authenticated. Please wait and try again."); return; }
+
+            const [degree, batch, year, semester] = state.path;
+            try {
+                await addDoc(papersCollection, {
+                    degree, batch, year, semester, caption,
+                    fileName: file.name, fileType: file.type, fileSize: file.size,
+                    uploaderId: userId, isPlaceholder: false,
+                    createdAt: serverTimestamp()
+                });
+                addFileModal.classList.add('hidden');
+                e.target.reset();
+                // UI will update automatically via onSnapshot listener
+            } catch (error) {
+                console.error("Error uploading file:", error);
+                alert("Failed to upload file.");
+            }
+        }
+
+        function getFileIcon(fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            switch (ext) {
+                case 'pdf': return { icon: 'fa-file-pdf', color: 'text-red-500' };
+                case 'doc': case 'docx': return { icon: 'fa-file-word', color: 'text-blue-500' };
+                case 'ppt': case 'pptx': return { icon: 'fa-file-powerpoint', color: 'text-orange-500' };
+                default: return { icon: 'fa-file', color: 'text-gray-500' };
             }
         }
 
         document.addEventListener('DOMContentLoaded', main);
     </script>
 
-    <!-- Header Section -->
+    <!-- Header -->
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-6 py-4">
             <h1 class="text-3xl font-bold text-gray-900">Department of Physics</h1>
@@ -323,38 +357,76 @@
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-8">
         <div id="breadcrumbs" class="mb-6 text-sm font-medium"></div>
-        <div id="loading-indicator" class="text-center py-10">
-            <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
-            <p class="mt-2 text-gray-600">Connecting to Archive...</p>
+        <div id="initial-loading-container">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
+                <p id="loading-message" class="mt-2 text-gray-600">Connecting to Archive...</p>
+            </div>
         </div>
-        <div id="content-area" class="hidden"></div>
-        <input type="file" id="file-uploader" class="hidden" accept=".pdf,.doc,.docx,.txt,.pptx,.ppt">
+        <div id="content-area"></div>
     </main>
 
-    <!-- Footer Section -->
+    <!-- Footer -->
     <footer class="bg-white mt-12 py-6 border-t">
         <div class="container mx-auto px-6 text-center text-gray-600">
             <p>&copy; <span id="current-year"></span> Department of Physics. All Rights Reserved.</p>
         </div>
     </footer>
 
-    <!-- Modal for Notifications -->
-    <div id="notification-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <div id="modal-icon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full">
-                     <!-- Icon (check/cross) will be set here by JS -->
-                </div>
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900"></h3>
-                <div class="mt-2 px-7 py-3">
-                    <p id="modal-message" class="text-sm text-gray-500"></p>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="modal-close-button" class="px-4 py-2 bg-indigo-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                        Close
-                    </button>
-                </div>
+    <!-- Instruction Modal -->
+    <div id="instruction-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Welcome to the Archive!</h3>
+            <div class="text-gray-600 space-y-3">
+                <p>This is a collaborative archive. You can help build it by adding folders and files.</p>
+                <p class="font-semibold">To add a file, please follow these steps:</p>
+                <ol class="list-decimal list-inside space-y-2 pl-2">
+                    <li>Navigate to the correct <strong class="text-indigo-600">Degree</strong> folder (e.g., BSc Physics).</li>
+                    <li>Click the <strong class="text-indigo-600">'Add New Batch'</strong> button to create a folder for your batch (e.g., 2021-2025).</li>
+                    <li>Enter the new batch folder and create a <strong class="text-indigo-600">Year</strong> folder.</li>
+                    <li>Enter the year folder and select the correct <strong class="text-indigo-600">Semester</strong>.</li>
+                    <li>Once inside the semester folder, click the <strong class="text-indigo-600">'Add New File'</strong> button to upload your papers or notes with a proper caption.</li>
+                </ol>
             </div>
+            <div class="mt-6 text-right">
+                <button id="instruction-close-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-md hover:bg-indigo-700">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Folder Modal -->
+    <div id="add-folder-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Create New Folder</h3>
+            <form id="add-folder-form">
+                <label for="folder-name" class="block text-sm font-medium text-gray-700">Folder Name</label>
+                <input type="text" id="folder-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 2021-2025">
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" id="add-folder-cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add File Modal -->
+    <div id="add-file-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Add New File</h3>
+            <form id="add-file-form" class="space-y-4">
+                <div>
+                    <label for="file-upload-input" class="block text-sm font-medium text-gray-700">Select File</label>
+                    <input type="file" id="file-upload-input" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <div>
+                    <label for="file-caption-input" class="block text-sm font-medium text-gray-700">Caption</label>
+                    <input type="text" id="file-caption-input" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., Mid-Term Exam Paper 2024">
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" id="add-file-cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700">Upload</button>
+                </div>
+            </form>
         </div>
     </div>
 
