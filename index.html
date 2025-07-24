@@ -34,6 +34,7 @@
             border: 1px solid #dcd6c8;
             padding: 1rem;
             background-color: #fffdfa;
+            height: 100%;
         }
 
         .fc .fc-button {
@@ -58,6 +59,8 @@
             cursor: pointer;
             border: 1px solid #a98467 !important;
             background-color: #c09e80 !important;
+            padding: 2px 4px;
+            font-size: 0.8rem;
         }
 
         .form-input {
@@ -69,14 +72,29 @@
             outline: none;
             border-color: #8a5a44;
             background-color: #ffffff;
-            box-shadow: 0 0 0 2px rgba(138, 90, 68, 0.2);
+            box-shadow: 0 0 0 3px rgba(138, 90, 68, 0.1);
+        }
+        .form-input.date-picker-fix::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn:active {
+            transform: translateY(0px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
     </style>
 </head>
 <body class="bg-[#f4f1ea]">
 
     <!-- Main Container -->
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
         
         <!-- Header -->
         <header class="text-center mb-10">
@@ -105,12 +123,16 @@
                     </div>
                     <div>
                         <label for="date" class="block text-sm font-medium text-[#6f635b] mb-1">Preferred Date</label>
-                        <input type="date" id="date" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                        <input type="date" id="date" required class="form-input date-picker-fix mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
                     </div>
-                    <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8a5a44] hover:bg-[#7d513c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44] transition-colors">
+                    <button id="submitBtn" type="submit" class="btn w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8a5a44] hover:bg-[#7d513c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
                         Submit Proposal
                     </button>
                 </form>
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden mt-4 p-3 rounded-md text-sm bg-green-100 text-green-800 border border-green-200">
+                    Your talk proposal has been submitted successfully!
+                </div>
             </div>
 
             <!-- Calendar Section -->
@@ -134,11 +156,11 @@
         <div id="popupDetails" class="text-gray-700 mb-4 space-y-2"></div>
         <div class="space-y-3">
             <input type="password" id="passwordInput" placeholder="Enter admin password to delete" class="form-input block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <button onclick="confirmDelete()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-700 text-base font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+            <div id="delete-actions" class="flex flex-col sm:flex-row gap-3">
+                <button id="deleteBtn" onclick="confirmDelete()" class="btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-700 text-base font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     Delete Talk
                 </button>
-                <button onclick="closePopup()" class="w-full inline-flex justify-center rounded-md border border-[#dcd6c8] shadow-sm px-4 py-2 bg-white text-base font-medium text-[#4a403a] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44] transition-colors">
+                <button onclick="closePopup()" class="btn w-full inline-flex justify-center rounded-md border border-[#dcd6c8] shadow-sm px-4 py-2 bg-white text-base font-medium text-[#4a403a] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
                     Cancel
                 </button>
             </div>
@@ -180,9 +202,9 @@
             notificationEl.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
             
             if (isError) {
-                notificationEl.classList.add('bg-red-100', 'text-red-700');
+                notificationEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
             } else {
-                notificationEl.classList.add('bg-green-100', 'text-green-700');
+                notificationEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
             }
             
             notificationEl.classList.remove('hidden');
@@ -200,10 +222,10 @@
             
             document.getElementById('popupTitle').textContent = "Talk Details";
             document.getElementById('popupDetails').innerHTML = `
-                <p><strong>Topic:</strong> ${currentEvent.extendedProps.topic}</p>
-                <p><strong>Speaker:</strong> ${currentEvent.extendedProps.name}</p>
-                <p><strong>Semester:</strong> ${currentEvent.extendedProps.semester}</p>
-                <p><strong>Date:</strong> ${currentEvent.start.toISOString().split('T')[0]}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Topic:</strong> ${currentEvent.extendedProps.topic}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Speaker:</strong> ${currentEvent.extendedProps.name}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Semester:</strong> ${currentEvent.extendedProps.semester}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Date:</strong> ${currentEvent.start.toISOString().split('T')[0]}</p>
             `;
             document.getElementById('passwordInput').value = '';
             document.getElementById('notification').classList.add('hidden'); // Hide old notifications
@@ -220,27 +242,30 @@
 
         window.confirmDelete = function() {
             const password = document.getElementById('passwordInput').value;
-            // IMPORTANT: This is a simple, insecure password check. 
-            // For a real application, use Firebase Authentication for proper security.
-            if (password === 'astrodingra') {
-                const eventId = currentEvent.id;
-                remove(ref(db, 'talks/' + eventId))
-                    .then(() => {
-                        console.log('Talk deleted successfully from Firebase.');
-                        // The onValue listener will automatically handle calendar updates.
-                        closePopup();
-                    })
-                    .catch((error) => {
-                        console.error("Error deleting talk: ", error);
-                        showNotification('Failed to delete talk.', true);
-                    });
-            } else {
+            if (password !== 'astrodingra') {
                 showNotification('Incorrect password!', true);
+                return;
             }
+
+            const eventId = currentEvent.id;
+            remove(ref(db, 'talks/' + eventId))
+                .then(() => {
+                    console.log('Talk deleted successfully from Firebase.');
+                    closePopup();
+                })
+                .catch((error) => {
+                    console.error("Error deleting talk: ", error);
+                    showNotification('Failed to delete talk.', true);
+                });
         }
 
         // --- DOMContentLoaded Listener ---
         document.addEventListener('DOMContentLoaded', function() {
+            // Feature: Prevent selecting past dates
+            const dateInput = document.getElementById('date');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
@@ -266,6 +291,7 @@
                         id: key,
                         title: talk.topic,
                         start: talk.date,
+                        allDay: true,
                         extendedProps: {
                             name: talk.name,
                             semester: talk.semester,
@@ -278,8 +304,17 @@
             });
 
             // Handle form submission
-            document.getElementById('talkForm').addEventListener('submit', function(e) {
+            const talkForm = document.getElementById('talkForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const successMessage = document.getElementById('successMessage');
+
+            talkForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                
+                // Feature: Loading state for submit button
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
                 const name = document.getElementById('name').value;
                 const semester = document.getElementById('semester').value;
                 const topic = document.getElementById('topic').value;
@@ -294,11 +329,22 @@
                     date: date
                 }).then(() => {
                     console.log("Talk submitted successfully!");
-                    this.reset();
-                    // No need to manually add event, onValue will catch it.
+                    talkForm.reset();
+                    dateInput.setAttribute('min', today); // Reset min date after form reset
+                    
+                    // Feature: Show success message
+                    successMessage.classList.remove('hidden');
+                    setTimeout(() => {
+                        successMessage.classList.add('hidden');
+                    }, 4000);
+
                 }).catch((error) => {
                     console.error("Error submitting talk: ", error);
-                    // You could add a user-facing error message here
+                    showNotification('There was an error submitting your proposal.', true);
+                }).finally(() => {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Proposal';
                 });
             });
         });
