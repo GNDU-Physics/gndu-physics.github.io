@@ -6,34 +6,268 @@
     <title>Physics Department - Exam Paper Archive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .folder {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        .card-hover-effect {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card-hover-effect:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        .folder:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+
+    <!-- Firebase and App Dependencies -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, setDoc, getDoc, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURATION ---
+        // Use environment variables provided by the Canvas environment
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-exam-archive';
+        
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db, papersCollection;
+        let userId = null;
+        let unsubscribeSnapshot = null; // To store the snapshot listener
+
+        // --- DOM ELEMENTS ---
+        const contentArea = document.getElementById('content-area');
+        const breadcrumbsContainer = document.getElementById('breadcrumbs');
+        const fileUploader = document.getElementById('file-uploader');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const currentYearSpan = document.getElementById('current-year');
+
+        // --- APP STATE ---
+        let state = {
+            path: [], // e.g., ['BSc Physics', '2021-2025', '2023', '3']
+            view: 'degrees', // degrees, batches, years, semesters, files
+        };
+
+        // Predefined folder structure
+        const FOLDER_STRUCTURE = {
+            'BSc Physics': {
+                '2021-2025': { '2023': ['3', '4'], '2024': ['5', '6'] },
+                '2022-2026': { '2024': ['1', '2'], '2025': ['3', '4'] }
+            },
+            'MSc Physics': {
+                '2023-2025': { '2024': ['1', '2'], '2025': ['3', '4'] }
+            },
+            'PhD Physics': {
+                '2023-2027': { '2024': ['1', '2'] }
+            }
+        };
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderBreadcrumbs() {
+            breadcrumbsContainer.innerHTML = `<a href="#" class="text-indigo-600 hover:underline" data-level="-1">Home</a>`;
+            state.path.forEach((segment, index) => {
+                breadcrumbsContainer.innerHTML += ` <span class="mx-2 text-gray-500">/</span> <a href="#" class="text-indigo-600 hover:underline" data-level="${index}">${segment}</a>`;
+            });
+        }
+
+        function renderFolders(items, type) {
+            contentArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">` +
+                items.map(item => `
+                    <div class="folder bg-white p-4 rounded-lg shadow-md text-center cursor-pointer flex flex-col items-center justify-center" data-type="${type}" data-name="${item}">
+                        <i class="fas fa-folder text-6xl text-yellow-400 mb-2"></i>
+                        <span class="font-semibold text-gray-700">${item}</span>
+                    </div>
+                `).join('') + `</div>`;
+        }
+
+        function renderFiles(files) {
+            let fileListHtml = files.length > 0 ? files.map(file => `
+                <div class="bg-white p-3 rounded-md shadow-sm flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-pdf text-2xl text-red-500 mr-3"></i>
+                        <span class="font-medium text-gray-800">${file.fileName}</span>
+                    </div>
+                    <span class="text-sm text-gray-500">${new Date(file.createdAt?.toDate()).toLocaleDateString()}</span>
+                </div>
+            `).join('') : `<p class="text-gray-500">No files uploaded yet.</p>`;
+
+            contentArea.innerHTML = `
+                <div class="space-y-3">
+                    ${fileListHtml}
+                </div>
+                <div class="mt-6">
+                    <button id="upload-button" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i> Upload File
+                    </button>
+                </div>
+            `;
+        }
+
+        function render() {
+            renderBreadcrumbs();
+            loadingIndicator.classList.add('hidden');
+            contentArea.classList.remove('hidden');
+
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot(); // Detach old listener
+                unsubscribeSnapshot = null;
+            }
+
+            switch (state.view) {
+                case 'degrees':
+                    renderFolders(Object.keys(FOLDER_STRUCTURE), 'degree');
+                    break;
+                case 'batches':
+                    renderFolders(Object.keys(FOLDER_STRUCTURE[state.path[0]]), 'batch');
+                    break;
+                case 'years':
+                    renderFolders(Object.keys(FOLDER_STRUCTURE[state.path[0]][state.path[1]]), 'year');
+                    break;
+                case 'semesters':
+                    renderFolders(FOLDER_STRUCTURE[state.path[0]][state.path[1]][state.path[2]], 'semester');
+                    break;
+                case 'files':
+                    listenForFiles();
+                    break;
+            }
+        }
+        
+        // --- FIRESTORE LOGIC ---
+
+        async function listenForFiles() {
+            if (!db) return;
+            contentArea.innerHTML = ''; // Clear content before showing loader
+            loadingIndicator.classList.remove('hidden');
+
+            const [degree, batch, year, semester] = state.path;
+            const q = query(papersCollection,
+                where("degree", "==", degree),
+                where("batch", "==", batch),
+                where("year", "==", year),
+                where("semester", "==", semester)
+            );
+
+            unsubscribeSnapshot = onSnapshot(q, (querySnapshot) => {
+                const files = [];
+                querySnapshot.forEach((doc) => {
+                    files.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort by creation date, newest first
+                files.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+                loadingIndicator.classList.add('hidden');
+                renderFiles(files);
+            }, (error) => {
+                console.error("Error fetching files: ", error);
+                contentArea.innerHTML = `<p class="text-red-500">Error loading files. Please try again.</p>`;
+                loadingIndicator.classList.add('hidden');
+            });
+        }
+        
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !db) return;
+
+            const [degree, batch, year, semester] = state.path;
+
+            try {
+                await addDoc(papersCollection, {
+                    degree,
+                    batch,
+                    year,
+                    semester,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    uploaderId: userId,
+                    createdAt: serverTimestamp()
+                });
+                // The onSnapshot listener will automatically update the UI
+            } catch (error) {
+                console.error("Error uploading file metadata: ", error);
+                alert("Could not upload file data. Please try again.");
+            }
+            
+            // Reset file input
+            event.target.value = null;
+        }
+
+        // --- EVENT HANDLERS ---
+
+        function handleNavigation(e) {
+            const target = e.target.closest('[data-type], [data-level]');
+            if (!target) return;
+
+            e.preventDefault();
+
+            if (target.dataset.level) { // Breadcrumb click
+                const level = parseInt(target.dataset.level, 10);
+                if (level === -1) { // Home
+                     state.path = [];
+                } else {
+                    state.path = state.path.slice(0, level + 1);
+                }
+            } else { // Folder click
+                state.path.push(target.dataset.name);
+            }
+
+            const depth = state.path.length;
+            state.view = ['degrees', 'batches', 'years', 'semesters', 'files'][depth];
+            render();
+        }
+        
+        // --- INITIALIZATION ---
+        
+        async function main() {
+            currentYearSpan.textContent = new Date().getFullYear();
+            
+            if (Object.keys(firebaseConfig).length === 0) {
+                contentArea.innerHTML = `<p class="text-red-500 text-center">Firebase configuration is missing. The application cannot start.</p>`;
+                return;
+            }
+
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            papersCollection = collection(db, `/artifacts/${appId}/public/data/papers`);
+
+            contentArea.addEventListener('click', handleNavigation);
+            breadcrumbsContainer.addEventListener('click', handleNavigation);
+            fileUploader.addEventListener('change', handleFileUpload);
+
+            // Use a delegated event listener for the upload button
+            contentArea.addEventListener('click', e => {
+                if (e.target.closest('#upload-button')) {
+                    fileUploader.click();
+                }
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    render(); // Initial render
+                }
+            });
+            
+            try {
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                contentArea.innerHTML = `<p class="text-red-500 text-center">Could not authenticate with the server.</p>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', main);
+    </script>
 
     <!-- Header Section -->
     <header class="bg-white shadow-md">
@@ -46,72 +280,23 @@
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-8">
 
-        <!-- Filter Section -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Filter Papers</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                <!-- Degree Filter -->
-                <div>
-                    <label for="degree" class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
-                    <select id="degree" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all">All Degrees</option>
-                        <option value="BSc Physics">B.Sc. Physics</option>
-                        <option value="MSc Physics">M.Sc. Physics</option>
-                        <option value="PhD Physics">Ph.D. Physics</option>
-                    </select>
-                </div>
-
-                <!-- Batch Filter -->
-                <div>
-                    <label for="batch" class="block text-sm font-medium text-gray-700 mb-1">Batch</label>
-                    <select id="batch" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all">All Batches</option>
-                        <option value="2020-2024">2020-2024</option>
-                        <option value="2021-2025">2021-2025</option>
-                        <option value="2022-2026">2022-2026</option>
-                        <option value="2023-2027">2023-2027</option>
-                    </select>
-                </div>
-
-                <!-- Year Filter -->
-                <div>
-                    <label for="year" class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                    <select id="year" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all">All Years</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                    </select>
-                </div>
-
-                <!-- Semester Filter -->
-                <div>
-                    <label for="semester" class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                    <select id="semester" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="all">All Semesters</option>
-                        <option value="1">1st</option>
-                        <option value="2">2nd</option>
-                        <option value="3">3rd</option>
-                        <option value="4">4th</option>
-                        <option value="5">5th</option>
-                        <option value="6">6th</option>
-                        <option value="7">7th</option>
-                        <option value="8">8th</option>
-                    </select>
-                </div>
-            </div>
+        <!-- Breadcrumbs -->
+        <div id="breadcrumbs" class="mb-6 text-sm font-medium">
+            <!-- Breadcrumbs will be dynamically inserted here -->
         </div>
 
-        <!-- Exam Papers Display Section -->
-        <div id="papers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Exam paper cards will be inserted here by JavaScript -->
+        <!-- Content Display Area -->
+        <div id="loading-indicator" class="text-center py-10">
+            <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
+            <p class="mt-2 text-gray-600">Loading...</p>
+        </div>
+        <div id="content-area" class="hidden">
+            <!-- Dynamic content (folders/files) will be inserted here -->
         </div>
 
-        <!-- No Results Message -->
-        <div id="no-results" class="hidden text-center py-12">
-            <h3 class="text-2xl font-semibold text-gray-700">No Exam Papers Found</h3>
-            <p class="text-gray-500 mt-2">Please try adjusting your filters.</p>
-        </div>
+        <!-- Hidden File Input for Uploads -->
+        <input type="file" id="file-uploader" class="hidden" accept=".pdf,.doc,.docx,.txt,.pptx">
+
     </main>
 
     <!-- Footer Section -->
@@ -121,109 +306,315 @@
         </div>
     </footer>
 
-    <script>
-        // --- DATA ---
-        // Sample data for exam papers. In a real application, this would come from a database.
-        const examPapers = [
-            { id: 1, degree: 'BSc Physics', batch: '2021-2025', year: 2023, semester: 3, subject: 'Classical Mechanics', file: '#' },
-            { id: 2, degree: 'BSc Physics', batch: '2021-2025', year: 2023, semester: 3, subject: 'Optics', file: '#' },
-            { id: 3, degree: 'BSc Physics', batch: '2020-2024', year: 2023, semester: 5, subject: 'Quantum Mechanics I', file: '#' },
-            { id: 4, degree: 'MSc Physics', batch: '2022-2026', year: 2024, semester: 1, subject: 'Mathematical Physics', file: '#' },
-            { id: 5, degree: 'MSc Physics', batch: '2022-2026', year: 2024, semester: 1, subject: 'Advanced Electrodynamics', file: '#' },
-            { id: 6, degree: 'BSc Physics', batch: '2020-2024', year: 2024, semester: 6, subject: 'Statistical Mechanics', file: '#' },
-            { id: 7, degree: 'PhD Physics', batch: '2023-2027', year: 2024, semester: 1, subject: 'Research Methodology', file: '#' },
-            { id: 8, degree: 'BSc Physics', batch: '2022-2026', year: 2024, semester: 2, subject: 'Waves and Oscillations', file: '#' },
-            { id: 9, degree: 'MSc Physics', batch: '2021-2025', year: 2025, semester: 3, subject: 'Solid State Physics', file: '#' },
-            { id: 10, degree: 'BSc Physics', batch: '2023-2027', year: 2025, semester: 1, subject: 'Introduction to Physics', file: '#' },
-        ];
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Department - Exam Paper Archive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .folder {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .folder:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
 
-        // --- ELEMENTS ---
-        const degreeFilter = document.getElementById('degree');
-        const batchFilter = document.getElementById('batch');
-        const yearFilter = document.getElementById('year');
-        const semesterFilter = document.getElementById('semester');
-        const papersContainer = document.getElementById('papers-container');
-        const noResultsMessage = document.getElementById('no-results');
+    <!-- Firebase and App Dependencies -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, setDoc, getDoc, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURATION ---
+        // Use environment variables provided by the Canvas environment
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-exam-archive';
+        
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db, papersCollection;
+        let userId = null;
+        let unsubscribeSnapshot = null; // To store the snapshot listener
+
+        // --- DOM ELEMENTS ---
+        const contentArea = document.getElementById('content-area');
+        const breadcrumbsContainer = document.getElementById('breadcrumbs');
+        const fileUploader = document.getElementById('file-uploader');
+        const loadingIndicator = document.getElementById('loading-indicator');
         const currentYearSpan = document.getElementById('current-year');
 
-        // --- FUNCTIONS ---
+        // --- APP STATE ---
+        let state = {
+            path: [], // e.g., ['BSc Physics', '2021-2025', '2023', '3']
+            view: 'degrees', // degrees, batches, years, semesters, files
+        };
 
-        /**
-         * Renders the exam paper cards to the page based on a provided list of papers.
-         * @param {Array} papers - The array of paper objects to display.
-         */
-        function renderPapers(papers) {
-            // Clear the existing content
-            papersContainer.innerHTML = '';
+        // Predefined folder structure
+        const FOLDER_STRUCTURE = {
+            'BSc Physics': {
+                '2021-2025': { '2023': ['3', '4'], '2024': ['5', '6'] },
+                '2022-2026': { '2024': ['1', '2'], '2025': ['3', '4'] }
+            },
+            'MSc Physics': {
+                '2023-2025': { '2024': ['1', '2'], '2025': ['3', '4'] }
+            },
+            'PhD Physics': {
+                '2023-2027': { '2024': ['1', '2'] }
+            }
+        };
 
-            if (papers.length === 0) {
-                // Show the "no results" message if the filtered list is empty
-                noResultsMessage.classList.remove('hidden');
-            } else {
-                // Hide the "no results" message
-                noResultsMessage.classList.add('hidden');
-                
-                // Create and append a card for each paper
-                papers.forEach(paper => {
-                    const card = `
-                        <div class="bg-white p-5 rounded-lg shadow-md card-hover-effect">
-                            <h3 class="text-xl font-semibold text-gray-800">${paper.subject}</h3>
-                            <div class="text-sm text-gray-500 mt-2">
-                                <p><strong>Degree:</strong> ${paper.degree}</p>
-                                <p><strong>Batch:</strong> ${paper.batch}</p>
-                                <p><strong>Year:</strong> ${paper.year} | <strong>Semester:</strong> ${paper.semester}</p>
-                            </div>
-                            <a href="${paper.file}" target="_blank" class="inline-block mt-4 bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                                View Paper
-                            </a>
-                        </div>
-                    `;
-                    papersContainer.innerHTML += card;
+        // --- RENDER FUNCTIONS ---
+
+        function renderBreadcrumbs() {
+            breadcrumbsContainer.innerHTML = `<a href="#" class="text-indigo-600 hover:underline" data-level="-1">Home</a>`;
+            state.path.forEach((segment, index) => {
+                breadcrumbsContainer.innerHTML += ` <span class="mx-2 text-gray-500">/</span> <a href="#" class="text-indigo-600 hover:underline" data-level="${index}">${segment}</a>`;
+            });
+        }
+
+        function renderFolders(items, type) {
+            contentArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">` +
+                items.map(item => `
+                    <div class="folder bg-white p-4 rounded-lg shadow-md text-center cursor-pointer flex flex-col items-center justify-center" data-type="${type}" data-name="${item}">
+                        <i class="fas fa-folder text-6xl text-yellow-400 mb-2"></i>
+                        <span class="font-semibold text-gray-700">${item}</span>
+                    </div>
+                `).join('') + `</div>`;
+        }
+
+        function renderFiles(files) {
+            let fileListHtml = files.length > 0 ? files.map(file => `
+                <div class="bg-white p-3 rounded-md shadow-sm flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-pdf text-2xl text-red-500 mr-3"></i>
+                        <span class="font-medium text-gray-800">${file.fileName}</span>
+                    </div>
+                    <span class="text-sm text-gray-500">${new Date(file.createdAt?.toDate()).toLocaleDateString()}</span>
+                </div>
+            `).join('') : `<p class="text-gray-500">No files uploaded yet.</p>`;
+
+            contentArea.innerHTML = `
+                <div class="space-y-3">
+                    ${fileListHtml}
+                </div>
+                <div class="mt-6">
+                    <button id="upload-button" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i> Upload File
+                    </button>
+                </div>
+            `;
+        }
+
+        function render() {
+            renderBreadcrumbs();
+            loadingIndicator.classList.add('hidden');
+            contentArea.classList.remove('hidden');
+
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot(); // Detach old listener
+                unsubscribeSnapshot = null;
+            }
+
+            switch (state.view) {
+                case 'degrees':
+                    renderFolders(Object.keys(FOLDER_STRUCTURE), 'degree');
+                    break;
+                case 'batches':
+                    renderFolders(Object.keys(FOLDER_STRUCTURE[state.path[0]]), 'batch');
+                    break;
+                case 'years':
+                    renderFolders(Object.keys(FOLDER_STRUCTURE[state.path[0]][state.path[1]]), 'year');
+                    break;
+                case 'semesters':
+                    renderFolders(FOLDER_STRUCTURE[state.path[0]][state.path[1]][state.path[2]], 'semester');
+                    break;
+                case 'files':
+                    listenForFiles();
+                    break;
+            }
+        }
+        
+        // --- FIRESTORE LOGIC ---
+
+        async function listenForFiles() {
+            if (!db) return;
+            contentArea.innerHTML = ''; // Clear content before showing loader
+            loadingIndicator.classList.remove('hidden');
+
+            const [degree, batch, year, semester] = state.path;
+            const q = query(papersCollection,
+                where("degree", "==", degree),
+                where("batch", "==", batch),
+                where("year", "==", year),
+                where("semester", "==", semester)
+            );
+
+            unsubscribeSnapshot = onSnapshot(q, (querySnapshot) => {
+                const files = [];
+                querySnapshot.forEach((doc) => {
+                    files.push({ id: doc.id, ...doc.data() });
                 });
+                // Sort by creation date, newest first
+                files.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+                loadingIndicator.classList.add('hidden');
+                renderFiles(files);
+            }, (error) => {
+                console.error("Error fetching files: ", error);
+                contentArea.innerHTML = `<p class="text-red-500">Error loading files. Please try again.</p>`;
+                loadingIndicator.classList.add('hidden');
+            });
+        }
+        
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !db) return;
+
+            const [degree, batch, year, semester] = state.path;
+
+            try {
+                await addDoc(papersCollection, {
+                    degree,
+                    batch,
+                    year,
+                    semester,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    uploaderId: userId,
+                    createdAt: serverTimestamp()
+                });
+                // The onSnapshot listener will automatically update the UI
+            } catch (error) {
+                console.error("Error uploading file metadata: ", error);
+                alert("Could not upload file data. Please try again.");
+            }
+            
+            // Reset file input
+            event.target.value = null;
+        }
+
+        // --- EVENT HANDLERS ---
+
+        function handleNavigation(e) {
+            const target = e.target.closest('[data-type], [data-level]');
+            if (!target) return;
+
+            e.preventDefault();
+
+            if (target.dataset.level) { // Breadcrumb click
+                const level = parseInt(target.dataset.level, 10);
+                if (level === -1) { // Home
+                     state.path = [];
+                } else {
+                    state.path = state.path.slice(0, level + 1);
+                }
+            } else { // Folder click
+                state.path.push(target.dataset.name);
+            }
+
+            const depth = state.path.length;
+            state.view = ['degrees', 'batches', 'years', 'semesters', 'files'][depth];
+            render();
+        }
+        
+        // --- INITIALIZATION ---
+        
+        async function main() {
+            currentYearSpan.textContent = new Date().getFullYear();
+            
+            if (Object.keys(firebaseConfig).length === 0) {
+                contentArea.innerHTML = `<p class="text-red-500 text-center">Firebase configuration is missing. The application cannot start.</p>`;
+                return;
+            }
+
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            papersCollection = collection(db, `/artifacts/${appId}/public/data/papers`);
+
+            contentArea.addEventListener('click', handleNavigation);
+            breadcrumbsContainer.addEventListener('click', handleNavigation);
+            fileUploader.addEventListener('change', handleFileUpload);
+
+            // Use a delegated event listener for the upload button
+            contentArea.addEventListener('click', e => {
+                if (e.target.closest('#upload-button')) {
+                    fileUploader.click();
+                }
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    render(); // Initial render
+                }
+            });
+            
+            try {
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                contentArea.innerHTML = `<p class="text-red-500 text-center">Could not authenticate with the server.</p>`;
             }
         }
 
-        /**
-         * Filters the exam papers based on the current selections in the dropdowns.
-         */
-        function filterAndRender() {
-            const selectedDegree = degreeFilter.value;
-            const selectedBatch = batchFilter.value;
-            const selectedYear = yearFilter.value;
-            const selectedSemester = semesterFilter.value;
-
-            const filteredPapers = examPapers.filter(paper => {
-                const degreeMatch = selectedDegree === 'all' || paper.degree === selectedDegree;
-                const batchMatch = selectedBatch === 'all' || paper.batch === selectedBatch;
-                const yearMatch = selectedYear === 'all' || paper.year.toString() === selectedYear;
-                const semesterMatch = selectedSemester === 'all' || paper.semester.toString() === selectedSemester;
-                
-                return degreeMatch && batchMatch && yearMatch && semesterMatch;
-            });
-
-            renderPapers(filteredPapers);
-        }
-
-        /**
-         * Initializes the application.
-         */
-        function initialize() {
-            // Set the current year in the footer
-            currentYearSpan.textContent = new Date().getFullYear();
-            
-            // Add event listeners to all filter dropdowns
-            [degreeFilter, batchFilter, yearFilter, semesterFilter].forEach(filter => {
-                filter.addEventListener('change', filterAndRender);
-            });
-
-            // Perform an initial render of all papers
-            renderPapers(examPapers);
-        }
-
-        // --- INITIALIZATION ---
-        // Run the initialize function when the DOM is fully loaded.
-        document.addEventListener('DOMContentLoaded', initialize);
-
+        document.addEventListener('DOMContentLoaded', main);
     </script>
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <h1 class="text-3xl font-bold text-gray-900">Department of Physics</h1>
+            <p class="text-lg text-gray-600">Exam Paper Archive</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+
+        <!-- Breadcrumbs -->
+        <div id="breadcrumbs" class="mb-6 text-sm font-medium">
+            <!-- Breadcrumbs will be dynamically inserted here -->
+        </div>
+
+        <!-- Content Display Area -->
+        <div id="loading-indicator" class="text-center py-10">
+            <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
+            <p class="mt-2 text-gray-600">Loading...</p>
+        </div>
+        <div id="content-area" class="hidden">
+            <!-- Dynamic content (folders/files) will be inserted here -->
+        </div>
+
+        <!-- Hidden File Input for Uploads -->
+        <input type="file" id="file-uploader" class="hidden" accept=".pdf,.doc,.docx,.txt,.pptx">
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-white mt-12 py-6 border-t">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; <span id="current-year"></span> Department of Physics. All Rights Reserved.</p>
+        </div>
+    </footer>
+
 </body>
 </html>
