@@ -80,11 +80,23 @@
             padding: 2px 4px;
             font-size: 0.8rem;
         }
+        
+        /* Style for "No Talk" background events */
+        .fc-bg-event {
+            opacity: 0.7;
+            cursor: pointer;
+        }
+        
+        .fc-bg-event .fc-event-title {
+            font-weight: bold;
+            color: white;
+            padding: 2px;
+        }
 
         .form-input {
-             background-color: #fffdfa;
-             border: 1px solid #dcd6c8;
-             transition: all 0.3s ease;
+            background-color: #fffdfa;
+            border: 1px solid #dcd6c8;
+            transition: all 0.3s ease;
         }
         .form-input:focus {
             outline: none;
@@ -153,37 +165,73 @@
         <!-- Main Content: Form and Calendar -->
         <main class="bg-[#fffdfa] p-6 sm:p-8 rounded-lg shadow-lg border border-[#dcd6c8] grid grid-cols-1 lg:grid-cols-5 gap-8">
             
-            <!-- Registration Form Section -->
-            <div class="lg:col-span-2">
-                <h2 class="text-2xl font-bold mb-6 text-[#4a403a]">Submit Your Talk Proposal</h2>
-                <form id="talkForm" class="space-y-5">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-[#6f635b] mb-1">Your Name</label>
-                        <input type="text" id="name" placeholder="Your Name" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+            <!-- Left Column: Forms -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Registration Form Section -->
+                <div>
+                    <h2 class="text-2xl font-bold mb-6 text-[#4a403a]">Submit Your Talk Proposal</h2>
+                    <form id="talkForm" class="space-y-5">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-[#6f635b] mb-1">Your Name</label>
+                            <input type="text" id="name" placeholder="Your Name" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-[#6f635b] mb-1">Email Address</label>
+                            <input type="email" id="email" placeholder="youremail@example.com" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+                        </div>
+                        <div>
+                            <label for="semester" class="block text-sm font-medium text-[#6f635b] mb-1">Semester</label>
+                            <input type="text" id="semester" placeholder="e.g., MSc 1st" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+                        </div>
+                        <div>
+                            <label for="topic" class="block text-sm font-medium text-[#6f635b] mb-1">Talk Topic</label>
+                            <textarea id="topic" placeholder="The title of your talk" required rows="3" class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400"></textarea>
+                        </div>
+                        <div>
+                            <label for="date" class="block text-sm font-medium text-[#6f635b] mb-1">Preferred Date</label>
+                            <input type="date" id="date" required class="form-input date-picker-fix mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                        </div>
+                        <button id="submitBtn" type="submit" class="btn w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8a5a44] hover:bg-[#7d513c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
+                            Submit Proposal
+                        </button>
+                    </form>
+                    <!-- User-facing Messages -->
+                    <div id="formMessage" class="hidden mt-4 p-3 rounded-md text-sm"></div>
+                </div>
+
+                <!-- Admin Section -->
+                <div class="border-t border-[#dcd6c8] pt-8">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4a403a]">Admin Panel</h2>
+                     <div id="adminLogin">
+                        <label for="adminPassword" class="block text-sm font-medium text-[#6f635b] mb-1">Enter Password to Manage</label>
+                        <div class="flex gap-2">
+                            <input type="password" id="adminPassword" class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                            <button id="loginBtn" class="btn mt-1 px-4 py-2 rounded-md bg-[#8a5a44] text-white hover:bg-[#7d513c]">Login</button>
+                        </div>
+                        <p id="loginError" class="text-red-600 text-sm mt-2 hidden">Incorrect password.</p>
                     </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-[#6f635b] mb-1">Email Address</label>
-                        <input type="email" id="email" placeholder="youremail@example.com" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+
+                    <div id="adminControls" class="hidden space-y-5">
+                         <p class="text-green-700 font-semibold">Admin access granted.</p>
+                        <h3 class="text-xl font-bold text-[#4a403a] border-b pb-2">Add "No Talk" Period</h3>
+                        <form id="noTalkForm">
+                            <div>
+                                <label for="reason" class="block text-sm font-medium text-[#6f635b] mb-1">Reason (e.g., Holiday)</label>
+                                <input type="text" id="reason" placeholder="Diwali Break" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="startDate" class="block text-sm font-medium text-[#6f635b] mb-1">Start Date</label>
+                                <input type="date" id="startDate" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="endDate" class="block text-sm font-medium text-[#6f635b] mb-1">End Date (optional)</label>
+                                <input type="date" id="endDate" class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                            </div>
+                            <button type="submit" class="btn w-full mt-4 flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                Add No-Talk Period
+                            </button>
+                        </form>
                     </div>
-                    <div>
-                        <label for="semester" class="block text-sm font-medium text-[#6f635b] mb-1">Semester</label>
-                        <input type="text" id="semester" placeholder="e.g., MSc 1st" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
-                    </div>
-                    <div>
-                        <label for="topic" class="block text-sm font-medium text-[#6f635b] mb-1">Talk Topic</label>
-                        <textarea id="topic" placeholder="The title of your talk" required rows="3" class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400"></textarea>
-                    </div>
-                    <div>
-                        <label for="date" class="block text-sm font-medium text-[#6f635b] mb-1">Preferred Date</label>
-                        <input type="date" id="date" required class="form-input date-picker-fix mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
-                    </div>
-                    <button id="submitBtn" type="submit" class="btn w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8a5a44] hover:bg-[#7d513c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
-                        Submit Proposal
-                    </button>
-                </form>
-                <!-- Success Message -->
-                <div id="successMessage" class="hidden mt-4 p-3 rounded-md text-sm bg-green-100 text-green-800 border border-green-200">
-                    Your talk proposal has been submitted successfully!
                 </div>
             </div>
 
@@ -204,27 +252,22 @@
     <!-- Modal/Popup for Event Details and Deletion -->
     <div id="popup-backdrop" class="fixed inset-0 bg-black bg-opacity-60 hidden z-40" onclick="closePopup()"></div>
     <div id="popup" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffdfa] rounded-lg shadow-2xl p-6 w-11/12 max-w-md hidden z-50 border border-[#dcd6c8]">
-        <h3 id="popupTitle" class="text-xl font-bold mb-4">Talk Details</h3>
+        <h3 id="popupTitle" class="text-xl font-bold mb-4">Details</h3>
         <div id="popupDetails" class="text-gray-700 mb-4 space-y-2"></div>
         
-        <div class="space-y-4 pt-4 border-t border-gray-200">
-            <label for="passwordInput" class="block text-sm font-medium text-[#6f635b]">Admin Actions (Enter Password)</label>
-            <input type="password" id="passwordInput" placeholder="Enter admin password" class="form-input block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+        <div id="adminActionSection" class="space-y-4 pt-4 border-t border-gray-200">
+            <label for="passwordInput" class="block text-sm font-medium text-[#6f635b]">Admin Password</label>
+            <input type="password" id="passwordInput" placeholder="Enter admin password to act" class="form-input block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
             
-            <div class="flex flex-col gap-3">
-                <button id="reminderBtn" onclick="sendReminder()" class="btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Send Reminder Email
-                </button>
-                <button id="deleteBtn" onclick="confirmDelete()" class="btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-700 text-base font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                    Delete Talk
-                </button>
+            <div id="popupButtons" class="flex flex-col gap-3">
+                <!-- Buttons are dynamically added here -->
             </div>
 
             <button onclick="closePopup()" class="btn w-full mt-3 inline-flex justify-center rounded-md border border-[#dcd6c8] shadow-sm px-4 py-2 bg-white text-base font-medium text-[#4a403a] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
                 Cancel
             </button>
         </div>
-        <!-- Custom Alert/Notification Box -->
+        <!-- Custom Alert/Notification Box inside Popup -->
         <div id="notification" class="hidden mt-4 p-3 rounded-md text-sm"></div>
     </div>
     
@@ -235,30 +278,31 @@
 
         // IMPORTANT: Replace with your actual Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
-            authDomain: "gndu-phys.firebaseapp.com",
-            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
-            projectId: "gndu-phys",
-            storageBucket: "gndu-phys.firebasestorage.app",
-            messagingSenderId: "527351049402",
-            appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
-            measurementId: "G-WQGP6DHMSL"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const talksRef = ref(db, 'talks');
+        const noTalkDatesRef = ref(db, 'noTalkDates');
 
         const calendarEl = document.getElementById('calendar');
         let calendar;
         let currentEvent = null;
-        
-        // --- Notification Function ---
+        let noTalkPeriods = []; // Cache for validation
+
+        // --- Notification Function (for popup) ---
         function showNotification(message, isError = false) {
             const notificationEl = document.getElementById('notification');
             notificationEl.textContent = message;
-            notificationEl.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            notificationEl.className = 'mt-4 p-3 rounded-md text-sm'; // Reset classes
             
             if (isError) {
                 notificationEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
@@ -266,11 +310,26 @@
                 notificationEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
             }
             
-            notificationEl.classList.remove('hidden');
-
             setTimeout(() => {
                 notificationEl.classList.add('hidden');
             }, 3000);
+        }
+        
+        // --- Form Message Function (for main form) ---
+        function showFormMessage(message, isError = false) {
+            const formMessageEl = document.getElementById('formMessage');
+            formMessageEl.textContent = message;
+            formMessageEl.className = 'mt-4 p-3 rounded-md text-sm'; // Reset classes
+            
+            if (isError) {
+                formMessageEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
+            } else {
+                formMessageEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
+            }
+
+            setTimeout(() => {
+                formMessageEl.classList.add('hidden');
+            }, 4000);
         }
 
         // --- Popup Functions ---
@@ -278,15 +337,49 @@
             currentEvent = info.event;
             const popup = document.getElementById('popup');
             const backdrop = document.getElementById('popup-backdrop');
+            const popupDetails = document.getElementById('popupDetails');
+            const popupTitle = document.getElementById('popupTitle');
+            const popupButtons = document.getElementById('popupButtons');
+
+            popupButtons.innerHTML = ''; // Clear previous buttons
             
-            document.getElementById('popupTitle').textContent = "Talk Details";
-            document.getElementById('popupDetails').innerHTML = `
-                <p><strong class="font-semibold text-[#6f635b]">Topic:</strong> ${currentEvent.extendedProps.topic}</p>
-                <p><strong class="font-semibold text-[#6f635b]">Speaker:</strong> ${currentEvent.extendedProps.name}</p>
-                <p><strong class="font-semibold text-[#6f635b]">Email:</strong> ${currentEvent.extendedProps.email}</p>
-                <p><strong class="font-semibold text-[#6f635b]">Semester:</strong> ${currentEvent.extendedProps.semester}</p>
-                <p><strong class="font-semibold text-[#6f635b]">Date:</strong> ${currentEvent.startStr}</p>
-            `;
+            const eventType = currentEvent.extendedProps.type;
+
+            if (eventType === 'no-talk') {
+                popupTitle.textContent = "No-Talk Period";
+                popupDetails.innerHTML = `<p><strong class="font-semibold text-[#6f635b]">Reason:</strong> ${currentEvent.title}</p>`;
+                // Add delete button for no-talk period
+                const deleteBtn = document.createElement('button');
+                deleteBtn.id = 'deleteBtn';
+                deleteBtn.textContent = 'Delete No-Talk Period';
+                deleteBtn.className = 'btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-700 text-base font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500';
+                deleteBtn.onclick = confirmDelete;
+                popupButtons.appendChild(deleteBtn);
+
+            } else { // It's a regular talk
+                popupTitle.textContent = "Talk Details";
+                popupDetails.innerHTML = `
+                    <p><strong class="font-semibold text-[#6f635b]">Topic:</strong> ${currentEvent.extendedProps.topic}</p>
+                    <p><strong class="font-semibold text-[#6f635b]">Speaker:</strong> ${currentEvent.extendedProps.name}</p>
+                    <p><strong class="font-semibold text-[#6f635b]">Email:</strong> ${currentEvent.extendedProps.email}</p>
+                    <p><strong class="font-semibold text-[#6f635b]">Semester:</strong> ${currentEvent.extendedProps.semester}</p>
+                    <p><strong class="font-semibold text-[#6f635b]">Date:</strong> ${currentEvent.startStr}</p>
+                `;
+                // Add reminder and delete buttons for talks
+                const reminderBtn = document.createElement('button');
+                reminderBtn.textContent = 'Send Reminder Email';
+                reminderBtn.className = 'btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500';
+                reminderBtn.onclick = sendReminder;
+                popupButtons.appendChild(reminderBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.id = 'deleteBtn';
+                deleteBtn.textContent = 'Delete Talk';
+                deleteBtn.className = 'btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-700 text-base font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500';
+                deleteBtn.onclick = confirmDelete;
+                popupButtons.appendChild(deleteBtn);
+            }
+
             document.getElementById('passwordInput').value = '';
             document.getElementById('notification').classList.add('hidden');
             
@@ -308,20 +401,22 @@
             }
 
             const eventId = currentEvent.id;
-            remove(ref(db, 'talks/' + eventId))
+            const eventType = currentEvent.extendedProps.type;
+            const refPath = eventType === 'no-talk' ? `noTalkDates/${eventId}` : `talks/${eventId}`;
+            
+            remove(ref(db, refPath))
                 .then(() => {
-                    console.log('Talk deleted successfully from Firebase.');
+                    console.log('Event deleted successfully from Firebase.');
                     closePopup();
                 })
                 .catch((error) => {
-                    console.error("Error deleting talk: ", error);
-                    showNotification('Failed to delete talk.', true);
+                    console.error("Error deleting event: ", error);
+                    showNotification('Failed to delete event.', true);
                 });
         }
 
-        // --- Updated Reminder Function ---
         window.sendReminder = function() {
-            if (!currentEvent) return;
+            if (!currentEvent || currentEvent.extendedProps.type === 'no-talk') return;
 
             const password = document.getElementById('passwordInput').value;
             if (password !== 'astrodingra') {
@@ -330,24 +425,11 @@
             }
 
             const { name, topic, email } = currentEvent.extendedProps;
-            // Create a date object in the local timezone to prevent off-by-one day errors
             const talkDateObj = new Date(currentEvent.startStr + 'T00:00:00');
             const talkDate = talkDateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
             const subject = `Reminder: Your Physics Club Talk on "${topic}"`;
-            const body = `
-Dear ${name},
-
-This is a friendly reminder about your upcoming talk for the GNDU Physics Club.
-
-Topic: ${topic}
-Date: ${talkDate}
-
-We're looking forward to your presentation!
-
-Best regards,
-GNDU Physics Club
-            `.trim();
+            const body = `Dear ${name},\n\nThis is a friendly reminder about your upcoming talk for the GNDU Physics Club.\n\nTopic: ${topic}\nDate: ${talkDate}\n\nWe're looking forward to your presentation!\n\nBest regards,\nGNDU Physics Club`.trim();
 
             const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.location.href = mailtoLink;
@@ -370,7 +452,6 @@ GNDU Physics Club
                 eventClick: function(info) {
                     showPopup(info);
                 },
-                // Desktop settings
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
@@ -379,80 +460,141 @@ GNDU Physics Club
                 }
             };
 
-            // Overwrite options for mobile
             if (isMobile) {
-                calendarOptions.initialView = 'listWeek'; // Better default view for mobile
-                calendarOptions.headerToolbar = {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'today'
-                };
-                calendarOptions.footerToolbar = { // Move view switcher to footer
-                    center: 'dayGridMonth,listWeek'
-                };
+                calendarOptions.initialView = 'listWeek';
+                calendarOptions.headerToolbar = { left: 'prev,next', center: 'title', right: 'today' };
+                calendarOptions.footerToolbar = { center: 'dayGridMonth,listWeek' };
             }
             
             calendar = new FullCalendar.Calendar(calendarEl, calendarOptions);
             calendar.render();
 
+            // --- Firebase Listeners ---
             onValue(talksRef, (snapshot) => {
                 const data = snapshot.val();
-                const events = [];
+                // Remove only old talk events, not no-talk events
+                calendar.getEvents().forEach(event => {
+                    if (event.extendedProps.type !== 'no-talk') {
+                        event.remove();
+                    }
+                });
+                
                 for (let key in data) {
                     const talk = data[key];
-                    events.push({
+                    calendar.addEvent({
                         id: key,
                         title: talk.topic,
                         start: talk.date,
                         allDay: true,
-                        extendedProps: {
-                            name: talk.name,
-                            email: talk.email, // Storing email
-                            semester: talk.semester,
-                            topic: talk.topic
-                        }
+                        extendedProps: { ...talk, type: 'talk' }
                     });
                 }
-                calendar.removeAllEvents();
-                calendar.addEventSource(events);
+            });
+            
+            onValue(noTalkDatesRef, (snapshot) => {
+                const data = snapshot.val();
+                noTalkPeriods = []; // Reset cache
+                // Remove only old no-talk events
+                calendar.getEvents().forEach(event => {
+                    if (event.extendedProps.type === 'no-talk') {
+                        event.remove();
+                    }
+                });
+
+                for (let key in data) {
+                    const period = data[key];
+                    noTalkPeriods.push(period); // Add to cache for validation
+
+                    // For FullCalendar, the end date is exclusive. Add 1 day.
+                    const endDate = new Date(period.endDate + 'T00:00:00');
+                    endDate.setDate(endDate.getDate() + 1);
+                    
+                    calendar.addEvent({
+                        id: key,
+                        title: period.reason,
+                        start: period.startDate,
+                        end: endDate.toISOString().split('T')[0],
+                        display: 'background',
+                        color: '#ef4444', // Red color
+                        extendedProps: { ...period, type: 'no-talk' }
+                    });
+                }
             });
 
+            // --- Form Handlers ---
             const talkForm = document.getElementById('talkForm');
             const submitBtn = document.getElementById('submitBtn');
-            const successMessage = document.getElementById('successMessage');
 
             talkForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Submitting...';
-
                 const name = document.getElementById('name').value;
                 const email = document.getElementById('email').value;
                 const semester = document.getElementById('semester').value;
                 const topic = document.getElementById('topic').value;
                 const date = document.getElementById('date').value;
 
+                // --- Validation against "No Talk" periods ---
+                const selectedDate = new Date(date + 'T00:00:00');
+                for (const period of noTalkPeriods) {
+                    const start = new Date(period.startDate + 'T00:00:00');
+                    const end = new Date(period.endDate + 'T00:00:00');
+                    if (selectedDate >= start && selectedDate <= end) {
+                        showFormMessage(`This date is unavailable due to: ${period.reason}. Please choose another date.`, true);
+                        return; // Stop submission
+                    }
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
                 const newTalkRef = push(talksRef);
                 
-                set(newTalkRef, {
-                    name: name,
-                    email: email,
-                    semester: semester,
-                    topic: topic,
-                    date: date
-                }).then(() => {
+                set(newTalkRef, { name, email, semester, topic, date })
+                .then(() => {
                     talkForm.reset();
                     dateInput.setAttribute('min', today);
-                    successMessage.classList.remove('hidden');
-                    setTimeout(() => {
-                        successMessage.classList.add('hidden');
-                    }, 4000);
+                    showFormMessage('Your talk proposal has been submitted successfully!', false);
                 }).catch((error) => {
-                    showNotification('There was an error submitting your proposal.', true);
+                    showFormMessage('There was an error submitting your proposal.', true);
                 }).finally(() => {
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Submit Proposal';
+                });
+            });
+
+            // --- Admin Panel Logic ---
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                const password = document.getElementById('adminPassword').value;
+                if (password === 'astrodingra') {
+                    document.getElementById('adminLogin').classList.add('hidden');
+                    document.getElementById('adminControls').classList.remove('hidden');
+                } else {
+                    const loginError = document.getElementById('loginError');
+                    loginError.classList.remove('hidden');
+                    setTimeout(() => loginError.classList.add('hidden'), 3000);
+                }
+            });
+
+            document.getElementById('noTalkForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const reason = document.getElementById('reason').value;
+                const startDate = document.getElementById('startDate').value;
+                let endDate = document.getElementById('endDate').value;
+
+                if (!endDate) {
+                    endDate = startDate; // Default to single day
+                }
+
+                const newNoTalkRef = push(noTalkDatesRef);
+                set(newNoTalkRef, { reason, startDate, endDate })
+                .then(() => {
+                    showFormMessage('No-talk period added successfully.', false);
+                    document.getElementById('noTalkForm').reset();
+                })
+                .catch((error) => {
+                    showFormMessage('Error adding no-talk period.', true);
+                    console.error("Error:", error);
                 });
             });
         });
