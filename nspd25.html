@@ -45,6 +45,11 @@
             transform: translateY(-2px);
             box-shadow: 0 0 25px rgba(243, 112, 33, 0.7);
         }
+        .btn-primary:disabled {
+            background-color: #f37021;
+            opacity: 0.5;
+            cursor: wait;
+        }
         .btn-secondary {
             background-color: transparent;
             border: 2px solid #0054a6;
@@ -129,31 +134,30 @@
 </head>
 <body class="overflow-x-hidden">
 
-
-
     <!-- Header -->
- <header class="fixed top-0 left-0 w-full z-50 glass-card">
-  <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
-    <!-- Logos -->
-    <div class="flex flex-wrap justify-center items-center gap-4 w-full md:w-auto">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Indian_Space_Research_Organisation_Logo.svg/1200px-Indian_Space_Research_Organisation_Logo.svg.png" alt="ISRO Logo" class="h-10 sm:h-12 w-auto">
-      <img src="guru-nanak-dev-university-logo-2C4DA7BCC1-seeklogo.com.png" alt="GNDU Logo" class="h-10 sm:h-12 w-auto">
-      <img src="image-removebg-preview-2.png" alt="PSS Logo" class="h-10 sm:h-12 w-auto">
-      <img src="physicsclub-removebg-preview.png" alt="Physics Club Logo" class="h-10 sm:h-12 w-auto">
-      <img src="dac.png" alt="DAC Logo" class="h-9 sm:h-9 w-auto">
-    </div>
+    <header class="fixed top-0 left-0 w-full z-50 glass-card">
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- Logos -->
+            <div class="flex flex-wrap justify-center items-center gap-4 w-full md:w-auto">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Indian_Space_Research_Organisation_Logo.svg/1200px-Indian_Space_Research_Organisation_Logo.svg.png" alt="ISRO Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=ISRO';">
+                <img src="https://seeklogo.com/images/G/guru-nanak-dev-university-logo-2C4DA7BCC1-seeklogo.com.png" alt="GNDU Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=GNDU';">
+                <!-- NOTE: The following image paths are relative. They may not load. Placeholders added. -->
+                <img src="image-removebg-preview-2.png" alt="PSS Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=PSS';">
+                <img src="physicsclub-removebg-preview.png" alt="Physics Club Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=Physics+Club';">
+                <img src="dac.png" alt="DAC Logo" class="h-9 sm:h-9 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=DAC';">
+            </div>
 
-    <!-- Desktop menu -->
-    <div class="hidden md:flex items-center space-x-6 text-lg">
-      <a href="#mission" class="hover:text-isro-orange transition-colors">Mission</a>
-      <a href="#schedule" class="hover:text-isro-orange transition-colors">Schedule</a>
-      <a href="#register" class="btn-primary px-6 py-2 rounded-full font-bold">Register Now</a>
-    </div>
-  </nav>
-</header>
+            <!-- Desktop menu -->
+            <div class="hidden md:flex items-center space-x-6 text-lg">
+                <a href="#mission" class="hover:text-isro-orange transition-colors">Mission</a>
+                <a href="#schedule" class="hover:text-isro-orange transition-colors">Schedule</a>
+                <a href="#register" class="btn-primary px-6 py-2 rounded-full font-bold">Register Now</a>
+            </div>
+        </nav>
+    </header>
 
-
-    <main>        <!-- Hero Section -->
+    <main>
+        <!-- Hero Section -->
         <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center pt-24 px-4 relative">
             <div class="absolute inset-0 bg-black opacity-60"></div>
             <div class="relative z-10">
@@ -176,8 +180,6 @@
             </div>
         </section>
 
-
-
         <!-- Mission Section -->
         <section id="mission" class="py-20 px-4 container mx-auto">
             <div class="text-center mb-12">
@@ -191,10 +193,11 @@
                     <p class="text-gray-300 leading-relaxed mt-4">Your mission is to analyze multi-layered geospatial data of the lunar south pole and identify the single optimal 1km x 1km grid cell for landing and construction, balancing safety, resources, and power.</p>
                 </div>
                 <div>
-                    <img src="https://c02.purpledshub.com/uploads/sites/48/2020/09/Clair-obscur-effect-plato-hook-99913ab.jpg?webp=1&w=1200" alt="Moon surface" class="rounded-lg shadow-2xl border-4 border-isro-blue/50">
+                    <img src="https://c02.purpledshub.com/uploads/sites/48/2020/09/Clair-obscur-effect-plato-hook-99913ab.jpg?webp=1&w=1200" alt="Moon surface" class="rounded-lg shadow-2xl border-4 border-isro-blue/50" onerror="this.onerror=null;this.src='https://placehold.co/600x400/0a0f1f/e0e0e0?text=Moon+Surface';">
                 </div>
             </div>
         </section>
+        
         <!-- Data Info Section -->
         <section id="data" class="py-20 px-4 container mx-auto bg-black/20">
             <div class="text-center mb-12">
@@ -220,14 +223,13 @@
                 </div>
             </div>
         </section>
+        
         <!-- Data Access Section -->
         <section id="rules" class="py-20 px-4 container mx-auto text-center">
             <h2 class="font-orbitron text-4xl font-bold uppercase isro-orange mb-4">Data & Protocols</h2>
             <p class="text-xl text-gray-400 mb-8">Mission datasets will be available on August 20, 2025. Access them via the GitHub repo.</p>
             <a href="https://github.com/jsdingra11" target="_blank" class="btn-secondary px-10 py-4 rounded-full font-bold text-xl uppercase">Access GitHub Repo</a>
         </section>
-
-
 
         <!-- Schedule Section -->
         <section id="schedule" class="py-20 px-4 bg-black/20">
@@ -277,10 +279,8 @@
             </div>
         </section>
 
-
-
         <!-- Registration Section -->
-        <section id="register" class="py-20 px-4 bg-black/20">
+        <section id="register" class="py-20 px-4">
             <div class="container mx-auto">
                 <div class="text-center mb-12">
                     <h2 class="font-orbitron text-4xl font-bold uppercase isro-orange">Register Your Crew</h2>
@@ -325,131 +325,164 @@
         <p class="mt-2 text-isro-orange">Good Luck, and Happy Hacking!</p>
     </footer>
 
+    <!-- Modal for messages -->
     <div id="messageModal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center">
-        <div class="glass-card p-8 rounded-lg text-center max-w-sm">
+        <div class="glass-card p-8 rounded-lg text-center max-w-sm mx-4">
             <h3 id="modalTitle" class="font-orbitron text-2xl font-bold mb-4"></h3>
             <p id="modalMessage" class="mb-6"></p>
             <button id="closeModalBtn" class="btn-primary px-6 py-2 rounded-full">Close</button>
         </div>
     </div>
+    
+<script type="module">
+    // --- Firebase Core Imports for REALTIME DATABASE ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    
+    // --- App & Firebase Initialization ---
+    // Your web app's Firebase configuration for the Hackathon Project
+    const firebaseConfig = {
+        apiKey: "AIzaSyDRyBGcSgLaH6jbqgDY9Yn8t1Rw9o-jWJw",
+        authDomain: "nspd25-996bf.firebaseapp.com",
+        databaseURL: "https://nspd25-996bf-default-rtdb.firebaseio.com",
+        projectId: "nspd25-996bf",
+        storageBucket: "nspd25-996bf.firebasestorage.app",
+        messagingSenderId: "678844470957",
+        appId: "1:678844470957:web:04a29772c95ebf67c21824",
+        measurementId: "G-GRCBT2KMKH"
+    };
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-            // IMPORTANT: Replace with your actual Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
-            authDomain: "gndu-phys.firebaseapp.com",
-            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
-            projectId: "gndu-phys",
-            storageBucket: "gndu-phys.firebasestorage.app",
-            messagingSenderId: "527351049402",
-            appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
-            measurementId: "G-WQGP6DHMSL"
-        };
+    // Initialize Firebase services
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const registrationsRef = ref(db, 'registrations');
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    // --- Countdown Timer ---
+    const countdownDate = new Date("August 20, 2025 09:00:00").getTime();
+    const countdownInterval = setInterval(() => {
+        const now = Date.now();
+        const distance = countdownDate - now;
+        if (distance < 0) {
+            document.getElementById('countdown').innerHTML = "<div class='font-orbitron text-4xl font-bold text-isro-orange'>LIFTOFF!</div>";
+            clearInterval(countdownInterval);
+            return;
+        }
+        document.getElementById('days').innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+        document.getElementById('hours').innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+        document.getElementById('minutes').innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+        document.getElementById('seconds').innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+    }, 1000);
+
+    // --- Dynamic UI Elements ---
+    const addMemberBtn = document.getElementById('addMemberBtn');
+    const membersContainer = document.getElementById('members-container');
+    let memberCount = 1;
+    addMemberBtn.addEventListener('click', () => {
+    if (memberCount < 4) {
+        memberCount++;
+
+        const memberDiv = document.createElement('div');
+        memberDiv.className = "member-entry grid md:grid-cols-2 gap-6 mt-4 border-t border-isro-blue/30 pt-4 relative";
+
+        memberDiv.innerHTML = `
+            <button type="button" class="absolute -top-3 -right-3 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center remove-member" title="Remove Member">✖</button>
+            <div>
+                <label for="memberName${memberCount}" class="block text-lg font-medium mb-2">Member ${memberCount} Name</label>
+                <input type="text" id="memberName${memberCount}" name="memberName${memberCount}" class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange" required>
+            </div>
+            <div>
+                <label for="memberEmail${memberCount}" class="block text-lg font-medium mb-2">Member ${memberCount} Email</label>
+                <input type="email" id="memberEmail${memberCount}" name="memberEmail${memberCount}" class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange" required>
+            </div>
+        `;
+
+        membersContainer.appendChild(memberDiv);
+
+        // Attach event to remove button
+        memberDiv.querySelector('.remove-member').addEventListener('click', () => {
+            memberDiv.remove();
+            memberCount--;
+        });
+    }
+});
+
+
+    // --- Modal Logic ---
+    const modal = document.getElementById('messageModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const showModal = (title, message, isSuccess) => {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalTitle.className = isSuccess
+            ? 'font-orbitron text-2xl font-bold mb-4 text-green-400'
+            : 'font-orbitron text-2xl font-bold mb-4 text-red-400';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+    closeModalBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    });
+
+    // --- Form Submission Logic ---
+    const registrationForm = document.getElementById('registrationForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    registrationForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         
-        const countdownDate = new Date("August 20, 2025 09:00:00").getTime();
-        const updateCountdown = setInterval(() => {
-            const now = new Date().getTime();
-            const distance = countdownDate - now;
-            if (distance < 0) {
-                clearInterval(updateCountdown);
-                document.getElementById('countdown').innerHTML = "<div class='font-orbitron text-4xl font-bold text-isro-orange'>LIFTOFF!</div>";
-                return;
-            }
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            document.getElementById('days').innerText = String(days).padStart(2, '0');
-            document.getElementById('hours').innerText = String(hours).padStart(2, '0');
-            document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
-        }, 1000);
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registering...';
 
-        const addMemberBtn = document.getElementById('addMemberBtn');
-        const membersContainer = document.getElementById('members-container');
-        let memberCount = 1;
-        addMemberBtn.addEventListener('click', () => {
-            if (memberCount < 4) {
-                memberCount++;
-                const memberFields = `<div class="grid md:grid-cols-2 gap-6 mt-4 border-t border-isro-blue/30 pt-4"><div><label for="memberName${memberCount}" class="block text-lg font-medium mb-2">Member ${memberCount} Name</label><input type="text" id="memberName${memberCount}" name="memberName${memberCount}" class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3"></div><div><label for="memberEmail${memberCount}" class="block text-lg font-medium mb-2">Member ${memberCount} Email</label><input type="email" id="memberEmail${memberCount}" name="memberEmail${memberCount}" class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3"></div></div>`;
-                membersContainer.insertAdjacentHTML('beforeend', memberFields);
-                if(memberCount === 4) {
-                    addMemberBtn.disabled = true;
-                    addMemberBtn.textContent = "Max Members Reached";
-                    addMemberBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-            }
+        const formData = new FormData(registrationForm);
+        const teamName = formData.get('teamName');
+        const members = [];
+        
+        // Add Team Leader
+        members.push({
+            role: 'Leader',
+            name: formData.get('leaderName'),
+            email: formData.get('leaderEmail'),
+            phone: formData.get('leaderPhone')
         });
 
-        const registrationForm = document.getElementById('registrationForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const modal = document.getElementById('messageModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-
-        const showModal = (title, message, isSuccess) => {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalTitle.className = isSuccess ? 'font-orbitron text-2xl font-bold mb-4 text-green-400' : 'font-orbitron text-2xl font-bold mb-4 text-red-400';
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        };
-
-        closeModalBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-
-        registrationForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Registering...';
-
-            const formData = new FormData(registrationForm);
-            const teamName = formData.get('teamName');
-            const members = [{ name: formData.get('leaderName'), email: formData.get('leaderEmail'), phone: formData.get('leaderPhone') }];
-            for (let i = 2; i <= memberCount; i++) {
-                const name = formData.get(`memberName${i}`);
-                const email = formData.get(`memberEmail${i}`);
-                if (name && email) members.push({ name, email });
+        // Add other members
+        for (let i = 2; i <= memberCount; i++) {
+            const name = formData.get(`memberName${i}`);
+            const email = formData.get(`memberEmail${i}`);
+            if (name && email) {
+                members.push({ role: `Member ${i}`, name, email });
             }
+        }
+        
+        const newRegistrationRef = push(registrationsRef);
+        
+        set(newRegistrationRef, {
+            teamName,
+            members,
+            registrationTime: new Date().toISOString()
+        }).then(() => {
+            console.log("Registration successful!");
+            showModal('Registration Successful!', `Your team "${teamName}" has been successfully registered. Good luck!`, true);
             
-            if (!teamName || !members[0].name || !members[0].email || !members[0].phone) {
-                showModal('Registration Error', 'Please fill in all details for the Team Leader.', false);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Register Team';
-                return;
-            }
-
-            try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const collectionPath = `artifacts/${appId}/public/data/registrations`;
-                await addDoc(collection(db, collectionPath), { teamName, members, registrationTime: new Date() });
-                showModal('Registration Successful!', `Your team "${teamName}" has been successfully registered.`, true);
-                registrationForm.reset();
-                membersContainer.innerHTML = '';
-                memberCount = 1;
-                addMemberBtn.disabled = false;
-                addMemberBtn.textContent = "Add Member (Max 4)";
-                addMemberBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } catch (error) {
-                showModal('Registration Failed', 'An error occurred. Please try again.', false);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Register Team';
-            }
+            // Reset form state
+            registrationForm.reset();
+            membersContainer.innerHTML = '';
+            memberCount = 1;
+            addMemberBtn.disabled = false;
+            addMemberBtn.textContent = "Add Member (Max 4)";
+            addMemberBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }).catch((error) => {
+            console.error("Error adding document: ", error);
+            showModal('Registration Failed', `An error occurred. Please check the console for details. [${error.message}]`, false);
+        }).finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register Team';
         });
-        
-        // Make rulebook buttons functional
-        const rulebookUrl = 'https://example.com/rulebook.pdf'; // Replace with your actual PDF URL
-        document.getElementById('downloadRulesHero').href = rulebookUrl;
+    });
+</script>
 
-    </script>
 </body>
 </html>
