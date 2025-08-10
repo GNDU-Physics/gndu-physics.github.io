@@ -1,481 +1,461 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Space Day Hackathon 2025 | GNDU Amritsar</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GNDU Physics Club | Talk Registration</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Orbitron for headings, Inter for body -->
+    <!-- FullCalendar for the event display -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
+    <!-- Custom Styles -->
     <style>
-        /* Custom styles for the sci-fi theme */
+        /* Using a cozy, academic font pairing */
         body {
-            background-color: #0a0f1f;
-            color: #e0e0e0;
-            font-family: 'Inter', sans-serif;
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-            overflow-x: hidden;
+            font-family: 'Lora', serif;
+            background-color: #f4f1ea; /* A warm, paper-like background */
+            color: #4a403a;
         }
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
-        .glass-card {
-            background: rgba(16, 24, 45, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .isro-orange { color: #f37021; }
-        .isro-blue { color: #0054a6; }
-        .btn-primary {
-            background-color: #f37021;
-            color: #ffffff;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(243, 112, 33, 0.4);
-        }
-        .btn-primary:hover {
-            background-color: #ffffff;
-            color: #f37021;
-            transform: translateY(-2px);
-            box-shadow: 0 0 25px rgba(243, 112, 33, 0.7);
-        }
-        .btn-primary:disabled {
-            background-color: #f37021;
-            opacity: 0.5;
-            cursor: wait;
-        }
-        .btn-secondary {
-            background-color: transparent;
-            border: 2px solid #0054a6;
-            color: #ffffff;
-            transition: all 0.3s ease;
-        }
-        .btn-secondary:hover {
-            background-color: #0054a6;
-            color: #ffffff;
-        }
-        .countdown-box {
-            background: rgba(0, 84, 166, 0.2);
-            border: 1px solid #0054a6;
+
+        h1, h2, h3, .fc-toolbar-title {
+            font-family: 'Playfair Display', serif;
         }
         
-        /* Animations */
-        .rocket-path {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: dash 5s linear forwards;
-        }
-        @keyframes dash { to { stroke-dashoffset: 0; } }
-
-        .hover-rocket {
-            position: absolute;
-            width: 50px;
-            height: auto;
-            opacity: 0;
-            animation: hover-fly 15s linear infinite;
-            filter: invert(75%) sepia(83%) saturate(5437%) hue-rotate(359deg) brightness(99%) contrast(94%); /* Orange color */
-        }
-        .hover-rocket:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .hover-rocket:nth-child(2) { left: 30%; animation-delay: 5s; transform: rotate(20deg); }
-        .hover-rocket:nth-child(3) { left: 70%; animation-delay: 10s; transform: rotate(-10deg); }
-
-        @keyframes hover-fly {
-            0% { transform: translateY(100vh) rotate(45deg); opacity: 0.7; }
-            100% { transform: translateY(-100vh) rotate(45deg); opacity: 0.7; }
+        /* Custom styles for FullCalendar to match the cozy theme */
+        .fc {
+            border: 1px solid #dcd6c8;
+            padding: 1rem;
+            background-color: #fffdfa;
+            height: 100%;
         }
 
-        /* New Timeline Styles */
-        .timeline-entry {
-            position: relative;
-            width: 100%;
-            margin-bottom: 2.5rem;
+        .fc .fc-button-group {
+            gap: 0.5rem; /* Adds space between buttons in a group */
         }
-        .timeline-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 1.5rem;
-            height: 1.5rem;
-            background-color: #f37021;
-            border-radius: 50%;
-            z-index: 10;
-            border: 4px solid #0a0f1f;
+
+        .fc .fc-button {
+            background-color: #8a5a44 !important;
+            color: #f4f1ea !important;
+            border: 1px solid #7d513c !important;
+            text-transform: capitalize !important;
+            border-radius: 0.375rem !important;
+            transition: all 0.2s ease-in-out !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            padding: 0.4em 0.9em !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            line-height: 1.5 !important;
         }
-        .timeline-entry:nth-child(odd) .glass-card {
-            margin-left: calc(50% + 3rem);
+
+        .fc .fc-button:hover {
+            background-color: #7d513c !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15) !important;
         }
-        .timeline-entry:nth-child(even) .glass-card {
-            margin-right: calc(50% + 3rem);
-            text-align: right;
+        
+        .fc .fc-button-primary:not(:disabled).fc-button-active, 
+        .fc .fc-button-primary:not(:disabled):active {
+            background-color: #6b4631 !important;
+            border-color: #5a3b2a !important;
+            transform: translateY(0px) !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2) !important;
         }
-        .timeline-curve {
-            position: absolute;
-            top: 50%;
-            width: 3rem; /* 48px */
-            height: 3rem; /* 48px */
-            transform: translateY(-50%);
-            color: #f37021;
+        
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: #fdecdf !important; /* A subtle, warm highlight */
         }
-        .timeline-entry:nth-child(odd) .timeline-curve {
-            left: -3rem;
+
+        .fc-event {
+            cursor: pointer;
+            border: 1px solid #a98467 !important;
+            background-color: #c09e80 !important;
+            padding: 2px 4px;
+            font-size: 0.8rem;
         }
-        .timeline-entry:nth-child(even) .timeline-curve {
-            right: -3rem;
-            transform: translateY(-50%) scaleX(-1);
+
+        .form-input {
+             background-color: #fffdfa;
+             border: 1px solid #dcd6c8;
+             transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #8a5a44;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(138, 90, 68, 0.1);
+        }
+        .form-input.date-picker-fix::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn:active {
+            transform: translateY(0px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        /* --- MOBILE RESPONSIVE STYLES --- */
+        @media (max-width: 767px) {
+            .container {
+                padding: 0.5rem;
+            }
+            main.bg-\[\#fffdfa\] {
+                padding: 1rem;
+            }
+            .fc {
+                padding: 0.5rem;
+            }
+            .fc .fc-toolbar-title {
+                font-size: 1.25rem !important;
+            }
+            .fc .fc-button, .fc .fc-button:hover {
+                padding: 0.3em 0.6em !important;
+                font-size: 0.8rem !important;
+                transform: none; /* Disable hover transform on mobile */
+            }
+            .fc-event {
+                font-size: 0.75rem;
+            }
+            h1 {
+                font-size: 2.25rem; /* Adjust main title */
+            }
+            h2 {
+                font-size: 1.25rem; /* Adjust form title */
+            }
         }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="bg-[#f4f1ea]">
 
-    <!-- Header -->
-    <header class="fixed top-0 left-0 w-full z-50 glass-card">
-        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <!-- Logos -->
-            <div class="flex flex-wrap justify-center items-center gap-4 w-full md:w-auto">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Indian_Space_Research_Organisation_Logo.svg/1200px-Indian_Space_Research_Organisation_Logo.svg.png" alt="ISRO Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=ISRO';">
-                <img src="https://seeklogo.com/images/G/guru-nanak-dev-university-logo-2C4DA7BCC1-seeklogo.com.png" alt="GNDU Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=GNDU';">
-                <!-- NOTE: The following image paths are relative. They may not load. Placeholders added. -->
-                <img src="image-removebg-preview-2.png" alt="PSS Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=PSS';">
-                <img src="physicsclub-removebg-preview.png" alt="Physics Club Logo" class="h-10 sm:h-12 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=Physics+Club';">
-                <img src="dac.png" alt="DAC Logo" class="h-9 sm:h-9 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/100x50/0a0f1f/e0e0e0?text=DAC';">
-            </div>
-
-            <!-- Desktop menu -->
-            <div class="hidden md:flex items-center space-x-6 text-lg">
-                <a href="#mission" class="hover:text-isro-orange transition-colors">Mission</a>
-                <a href="#schedule" class="hover:text-isro-orange transition-colors">Schedule</a>
-                <a href="#register" class="btn-primary px-6 py-2 rounded-full font-bold">Register Now</a>
-            </div>
-        </nav>
-    </header>
-
-    <main>
-        <!-- Hero Section -->
-        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center pt-24 px-4 relative">
-            <div class="absolute inset-0 bg-black opacity-60"></div>
-            <div class="relative z-10">
-                <h1 class="font-orbitron text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-widest text-white">National Space Day</h1>
-                <h2 class="font-orbitron text-3xl sm:text-4xl md:text-6xl font-bold uppercase isro-orange mb-6">Hackathon 2025</h2>
-                <p class="max-w-3xl mx-auto text-base md:text-xl mb-8 text-gray-300">Organized by the Department of Physics, Guru Nanak Dev University, Amritsar</p>
-                
-                <div id="countdown" class="flex justify-center gap-2 md:gap-8 my-10">
-                    <div class="countdown-box p-3 rounded-lg w-20 md:w-24"><div id="days" class="font-orbitron text-3xl md:text-4xl font-bold">00</div><div class="text-xs md:text-sm uppercase">Days</div></div>
-                    <div class="countdown-box p-3 rounded-lg w-20 md:w-24"><div id="hours" class="font-orbitron text-3xl md:text-4xl font-bold">00</div><div class="text-xs md:text-sm uppercase">Hours</div></div>
-                    <div class="countdown-box p-3 rounded-lg w-20 md:w-24"><div id="minutes" class="font-orbitron text-3xl md:text-4xl font-bold">00</div><div class="text-xs md:text-sm uppercase">Minutes</div></div>
-                    <div class="countdown-box p-3 rounded-lg w-20 md:w-24"><div id="seconds" class="font-orbitron text-3xl md:text-4xl font-bold">00</div><div class="text-xs md:text-sm uppercase">Seconds</div></div>
-                </div>
-
-                <div class="flex flex-col md:flex-row justify-center items-center gap-4">
-                    <a href="#register" class="btn-primary px-8 py-3 md:px-10 md:py-4 rounded-full font-bold text-lg md:text-xl uppercase w-full md:w-auto">Launch Your Mission</a>
-                    <a href="#data" class="btn-secondary px-8 py-3 md:px-10 md:py-4 rounded-full font-bold text-lg md:text-xl uppercase w-full md:w-auto">View Datasets</a>
-                    <a href="#" id="downloadRulesHero" class="btn-secondary px-8 py-3 md:px-10 md:py-4 rounded-full font-bold text-lg md:text-xl uppercase w-full md:w-auto">Download Rulebook</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Mission Section -->
-        <section id="mission" class="py-20 px-4 container mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="font-orbitron text-4xl font-bold uppercase isro-orange">Mission Directive</h2>
-                <p class="text-xl text-gray-400 mt-2">Problem: Chandrayaan-4 Lunar Outpost Mandate</p>
-            </div>
-            <div class="grid md:grid-cols-2 gap-10 items-center">
-                <div class="glass-card p-8 rounded-lg">
-                    <h3 class="font-orbitron text-2xl font-bold mb-4 text-white">Introduction</h3>
-                    <p class="text-gray-300 leading-relaxed">Following the monumental successes of the Chandrayaan program, the next national objective is the establishment of a semi-permanent research outpost on the Moon. The Chandrayaan-4 mission is the cornerstone of this effort.</p>
-                    <p class="text-gray-300 leading-relaxed mt-4">Your mission is to analyze multi-layered geospatial data of the lunar south pole and identify the single optimal 1km x 1km grid cell for landing and construction, balancing safety, resources, and power.</p>
-                </div>
-                <div>
-                    <img src="https://c02.purpledshub.com/uploads/sites/48/2020/09/Clair-obscur-effect-plato-hook-99913ab.jpg?webp=1&w=1200" alt="Moon surface" class="rounded-lg shadow-2xl border-4 border-isro-blue/50" onerror="this.onerror=null;this.src='https://placehold.co/600x400/0a0f1f/e0e0e0?text=Moon+Surface';">
-                </div>
-            </div>
-        </section>
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
         
-        <!-- Data Info Section -->
-        <section id="data" class="py-20 px-4 container mx-auto bg-black/20">
-            <div class="text-center mb-12">
-                <h2 class="font-orbitron text-3xl md:text-4xl font-bold uppercase isro-orange">Mission Datasets</h2>
-                <p class="text-lg md:text-xl text-gray-400 mt-2">Analyze these multi-layered geospatial data files.</p>
-            </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="glass-card p-6 rounded-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
-                    <h3 class="font-orbitron text-xl font-bold mb-2 text-white">elevation.csv</h3>
-                    <p class="text-gray-300">A 500x500 matrix of elevation values. Crucial for determining landing site safety.</p>
-                </div>
-                <div class="glass-card p-6 rounded-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
-                    <h3 class="font-orbitron text-xl font-bold mb-2 text-white">illumination.csv</h3>
-                    <p class="text-gray-300">Average solar illumination percentage. Key for continuous power generation.</p>
-                </div>
-                <div class="glass-card p-6 rounded-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
-                    <h3 class="font-orbitron text-xl font-bold mb-2 text-white">water_ice.csv</h3>
-                    <p class="text-gray-300">Probability of subsurface water-ice deposits. Essential for in-situ resource utilization.</p>
-                </div>
-                <div class="glass-card p-6 rounded-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
-                    <h3 class="font-orbitron text-xl font-bold mb-2 text-white">signal_occultation.csv</h3>
-                    <p class="text-gray-300">Annual hours of communication blackout. Vital for mission control link.</p>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Data Access Section -->
-        <section id="rules" class="py-20 px-4 container mx-auto text-center">
-            <h2 class="font-orbitron text-4xl font-bold uppercase isro-orange mb-4">Data & Protocols</h2>
-            <p class="text-xl text-gray-400 mb-8">Mission datasets will be available on August 20, 2025. Access them via the GitHub repo.</p>
-            <a href="https://github.com/jsdingra11" target="_blank" class="btn-secondary px-10 py-4 rounded-full font-bold text-xl uppercase">Access GitHub Repo</a>
-        </section>
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#4a403a]">GNDU Physics Club</h1>
+            <p class="text-lg text-[#6f635b] mt-2">Weekly Talk Registrations</p>
+        </header>
 
-        <!-- Schedule Section -->
-        <section id="schedule" class="py-20 px-4 bg-black/20">
-            <div class="container mx-auto">
-                <div class="text-center mb-12">
-                    <h2 class="font-orbitron text-4xl font-bold uppercase isro-orange">Event Timeline</h2>
-                    <p class="text-xl text-gray-400 mt-2">Mission clock is ticking.</p>
-                </div>
-                <div class="max-w-3xl mx-auto">
-                    <div class="relative">
-                        <div class="absolute left-1/2 -translate-x-1/2 h-full w-1 bg-isro-blue/50 rounded-full"></div>
-                        
-                        <div class="timeline-entry">
-                            <div class="timeline-dot"></div>
-                            <div class="glass-card p-6 rounded-lg md:w-2/5 relative">
-                                <svg class="timeline-curve" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M48 24C23.5 24 23.5 0 0 0" stroke="currentColor" stroke-width="2"/></svg>
-                                <h3 class="font-orbitron text-xl font-bold">00:00 - 00:15</h3>
-                                <p>Briefing & Setup</p>
-                            </div>
-                        </div>
-                        <div class="timeline-entry">
-                            <div class="timeline-dot"></div>
-                            <div class="glass-card p-6 rounded-lg md:w-2/5 relative">
-                                <svg class="timeline-curve" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M48 24C23.5 24 23.5 0 0 0" stroke="currentColor" stroke-width="2"/></svg>
-                                <h3 class="font-orbitron text-xl font-bold">00:15 - 02:45</h3>
-                                <p>Coding Phase</p>
-                            </div>
-                        </div>
-                        <div class="timeline-entry">
-                            <div class="timeline-dot"></div>
-                            <div class="glass-card p-6 rounded-lg md:w-2/5 relative">
-                                <svg class="timeline-curve" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M48 24C23.5 24 23.5 0 0 0" stroke="currentColor" stroke-width="2"/></svg>
-                                <h3 class="font-orbitron text-xl font-bold">02:45 - 03:00</h3>
-                                <p>Final Submissions</p>
-                            </div>
-                        </div>
-                        <div class="timeline-entry">
-                            <div class="timeline-dot"></div>
-                            <div class="glass-card p-6 rounded-lg md:w-2/5 relative">
-                                <svg class="timeline-curve" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M48 24C23.5 24 23.5 0 0 0" stroke="currentColor" stroke-width="2"/></svg>
-                                <h3 class="font-orbitron text-xl font-bold">Post-Hack</h3>
-                                <p>Judging & Results</p>
-                            </div>
-                        </div>
+        <!-- Main Content: Form and Calendar -->
+        <main class="bg-[#fffdfa] p-6 sm:p-8 rounded-lg shadow-lg border border-[#dcd6c8] grid grid-cols-1 lg:grid-cols-5 gap-8">
+            
+            <!-- Registration Form Section -->
+            <div class="lg:col-span-2">
+                <h2 class="text-2xl font-bold mb-6 text-[#4a403a]">Submit Your Talk Proposal</h2>
+                <form id="talkForm" class="space-y-5">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-[#6f635b] mb-1">Your Name</label>
+                        <input type="text" id="name" placeholder="Your Name" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
                     </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-[#6f635b] mb-1">Email Address</label>
+                        <input type="email" id="email" placeholder="youremail@example.com" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+                    </div>
+                    <div>
+                        <label for="semester" class="block text-sm font-medium text-[#6f635b] mb-1">Semester</label>
+                        <input type="text" id="semester" placeholder="e.g., MSc 1st" required class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+                    </div>
+                    <div>
+                        <label for="topic" class="block text-sm font-medium text-[#6f635b] mb-1">Talk Topic</label>
+                        <textarea id="topic" placeholder="The title of your talk" required rows="3" class="form-input mt-1 block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400"></textarea>
+                    </div>
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-[#6f635b] mb-1">Preferred Date</label>
+                        <input type="date" id="date" required class="form-input date-picker-fix mt-1 block w-full px-3 py-2 rounded-md shadow-sm">
+                    </div>
+                    <button id="submitBtn" type="submit" class="btn w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#8a5a44] hover:bg-[#7d513c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
+                        Submit Proposal
+                    </button>
+                </form>
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden mt-4 p-3 rounded-md text-sm bg-green-100 text-green-800 border border-green-200">
+                    Your talk proposal has been submitted successfully!
                 </div>
             </div>
-        </section>
 
-        <!-- Registration Section -->
-        <section id="register" class="py-20 px-4">
-            <div class="container mx-auto">
-                <div class="text-center mb-12">
-                    <h2 class="font-orbitron text-4xl font-bold uppercase isro-orange">Register Your Crew</h2>
-                    <p class="text-xl text-gray-400 mt-2">Assemble your team and prepare for launch.</p>
-                </div>
-                <div class="max-w-4xl mx-auto glass-card p-8 rounded-lg">
-                    <form id="registrationForm" class="space-y-6">
-                        <div>
-                            <label for="teamName" class="block text-lg font-medium mb-2">Team Name</label>
-                            <input type="text" id="teamName" name="teamName" required class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange">
-                        </div>
-                        
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="leaderName" class="block text-lg font-medium mb-2">Team Leader Name</label>
-                                <input type="text" id="leaderName" name="leaderName" required class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange">
-                            </div>
-                            <div>
-                                <label for="leaderEmail" class="block text-lg font-medium mb-2">Team Leader Email</label>
-                                <input type="email" id="leaderEmail" name="leaderEmail" required class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange">
-                            </div>
-                        </div>
-                         <div>
-                            <label for="leaderPhone" class="block text-lg font-medium mb-2">Team Leader Phone</label>
-                            <input type="tel" id="leaderPhone" name="leaderPhone" required class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange">
-                        </div>
-                        
-                        <div id="members-container"></div>
-
-                        <div class="flex justify-between items-center">
-                            <button type="button" id="addMemberBtn" class="btn-secondary px-4 py-2 rounded-md">Add Member (Max 4)</button>
-                            <button type="submit" id="submitBtn" class="btn-primary px-8 py-3 rounded-full font-bold text-lg">Register Team</button>
-                        </div>
-                    </form>
-                </div>
+            <!-- Calendar Section -->
+            <div id="calendar-container" class="lg:col-span-3">
+                <div id="calendar"></div>
             </div>
-        </section>
-    </main>
 
-    <footer class="py-8 text-center bg-black">
-        <p>&copy; 2025 Department of Physics, Guru Nanak Dev University, Amritsar. All rights reserved.</p>
-        <p class="mt-2 text-isro-orange">Good Luck, and Happy Hacking!</p>
-    </footer>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="text-center mt-12 py-4">
+            <p class="text-sm text-[#6f635b]">&copy; 2025 GNDU Physics Club. All rights reserved.</p>
+            <a href="https://github.com/GNDU-Physics/" class="text-sm text-[#8a5a44] hover:underline mt-1 inline-block">View on GitHub</a>
+        </footer>
+    </div>
 
-    <!-- Modal for messages -->
-    <div id="messageModal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center">
-        <div class="glass-card p-8 rounded-lg text-center max-w-sm mx-4">
-            <h3 id="modalTitle" class="font-orbitron text-2xl font-bold mb-4"></h3>
-            <p id="modalMessage" class="mb-6"></p>
-            <button id="closeModalBtn" class="btn-primary px-6 py-2 rounded-full">Close</button>
+    <!-- Modal/Popup for Event Details and Deletion -->
+    <div id="popup-backdrop" class="fixed inset-0 bg-black bg-opacity-60 hidden z-40" onclick="closePopup()"></div>
+    <div id="popup" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffdfa] rounded-lg shadow-2xl p-6 w-11/12 max-w-md hidden z-50 border border-[#dcd6c8]">
+        <h3 id="popupTitle" class="text-xl font-bold mb-4">Talk Details</h3>
+        <div id="popupDetails" class="text-gray-700 mb-4 space-y-2"></div>
+        
+        <div class="space-y-4 pt-4 border-t border-gray-200">
+            <label for="passwordInput" class="block text-sm font-medium text-[#6f635b]">Admin Actions (Enter Password)</label>
+            <input type="password" id="passwordInput" placeholder="Enter admin password" class="form-input block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400">
+            
+            <div class="flex flex-col gap-3">
+                <button id="reminderBtn" onclick="sendReminder()" class="btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Send Reminder Email
+                </button>
+                <button id="deleteBtn" onclick="confirmDelete()" class="btn w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-700 text-base font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Delete Talk
+                </button>
+            </div>
+
+            <button onclick="closePopup()" class="btn w-full mt-3 inline-flex justify-center rounded-md border border-[#dcd6c8] shadow-sm px-4 py-2 bg-white text-base font-medium text-[#4a403a] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a5a44]">
+                Cancel
+            </button>
         </div>
+        <!-- Custom Alert/Notification Box -->
+        <div id="notification" class="hidden mt-4 p-3 rounded-md text-sm"></div>
     </div>
     
-<script type="module">
-    // --- Firebase Core Imports for REALTIME DATABASE ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-    
-    // --- App & Firebase Initialization ---
-    // Your web app's Firebase configuration for the Hackathon Project
-    const firebaseConfig = {
-        apiKey: "AIzaSyDRyBGcSgLaH6jbqgDY9Yn8t1Rw9o-jWJw",
-        authDomain: "nspd25-996bf.firebaseapp.com",
-        databaseURL: "https://nspd25-996bf-default-rtdb.firebaseio.com",
-        projectId: "nspd25-996bf",
-        storageBucket: "nspd25-996bf.firebasestorage.app",
-        messagingSenderId: "678844470957",
-        appId: "1:678844470957:web:04a29772c95ebf67c21824",
-        measurementId: "G-GRCBT2KMKH"
-    };
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-    // Initialize Firebase services
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const registrationsRef = ref(db, 'registrations');
-
-    // --- Countdown Timer ---
-    const countdownDate = new Date("August 20, 2025 09:00:00").getTime();
-    const countdownInterval = setInterval(() => {
-        const now = Date.now();
-        const distance = countdownDate - now;
-        if (distance < 0) {
-            document.getElementById('countdown').innerHTML = "<div class='font-orbitron text-4xl font-bold text-isro-orange'>LIFTOFF!</div>";
-            clearInterval(countdownInterval);
-            return;
-        }
-        document.getElementById('days').innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
-        document.getElementById('hours').innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
-        document.getElementById('minutes').innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-        document.getElementById('seconds').innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
-    }, 1000);
-
-    // --- Dynamic UI Elements ---
-    const addMemberBtn = document.getElementById('addMemberBtn');
-    const membersContainer = document.getElementById('members-container');
-    let memberCount = 1;
-    addMemberBtn.addEventListener('click', () => {
-        if (memberCount < 4) {
-            memberCount++;
-            const memberHtml = `
-                <div class="member-entry grid md:grid-cols-2 gap-6 mt-4 border-t border-isro-blue/30 pt-4">
-                    <div>
-                        <label for="memberName${memberCount}" class="block text-lg font-medium mb-2">Member ${memberCount} Name</label>
-                        <input type="text" id="memberName${memberCount}" name="memberName${memberCount}" class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange" required>
-                    </div>
-                    <div>
-                        <label for="memberEmail${memberCount}" class="block text-lg font-medium mb-2">Member ${memberCount} Email</label>
-                        <input type="email" id="memberEmail${memberCount}" name="memberEmail${memberCount}" class="w-full bg-blue-900/20 border border-isro-blue/50 rounded-lg p-3 focus:ring-isro-orange focus:border-isro-orange" required>
-                    </div>
-                </div>`;
-            membersContainer.insertAdjacentHTML('beforeend', memberHtml);
-            if (memberCount === 4) {
-                addMemberBtn.disabled = true;
-                addMemberBtn.textContent = "Max Members";
-                addMemberBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        }
-    });
-
-    // --- Modal Logic ---
-    const modal = document.getElementById('messageModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalMessage = document.getElementById('modalMessage');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const showModal = (title, message, isSuccess) => {
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modalTitle.className = isSuccess
-            ? 'font-orbitron text-2xl font-bold mb-4 text-green-400'
-            : 'font-orbitron text-2xl font-bold mb-4 text-red-400';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    };
-    closeModalBtn.addEventListener('click', () => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    });
-
-    // --- Form Submission Logic ---
-    const registrationForm = document.getElementById('registrationForm');
-    const submitBtn = document.getElementById('submitBtn');
-
-    registrationForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+        // IMPORTANT: Replace with your actual Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZjTMc2pcynlhKAqoWK20JZGcmlNeisxE",
+            authDomain: "gndu-phys.firebaseapp.com",
+            databaseURL: "https://gndu-phys-default-rtdb.firebaseio.com",
+            projectId: "gndu-phys",
+            storageBucket: "gndu-phys.firebasestorage.app",
+            messagingSenderId: "527351049402",
+            appId: "1:527351049402:web:dd63e6c0ab229f165a2683",
+            measurementId: "G-WQGP6DHMSL"
+        };
         
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Registering...';
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const talksRef = ref(db, 'talks');
 
-        const formData = new FormData(registrationForm);
-        const teamName = formData.get('teamName');
-        const members = [];
+        const calendarEl = document.getElementById('calendar');
+        let calendar;
+        let currentEvent = null;
         
-        // Add Team Leader
-        members.push({
-            role: 'Leader',
-            name: formData.get('leaderName'),
-            email: formData.get('leaderEmail'),
-            phone: formData.get('leaderPhone')
-        });
-
-        // Add other members
-        for (let i = 2; i <= memberCount; i++) {
-            const name = formData.get(`memberName${i}`);
-            const email = formData.get(`memberEmail${i}`);
-            if (name && email) {
-                members.push({ role: `Member ${i}`, name, email });
-            }
-        }
-        
-        const newRegistrationRef = push(registrationsRef);
-        
-        set(newRegistrationRef, {
-            teamName,
-            members,
-            registrationTime: new Date().toISOString()
-        }).then(() => {
-            console.log("Registration successful!");
-            showModal('Registration Successful!', `Your team "${teamName}" has been successfully registered. Good luck!`, true);
+        // --- Notification Function ---
+        function showNotification(message, isError = false) {
+            const notificationEl = document.getElementById('notification');
+            notificationEl.textContent = message;
+            notificationEl.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
             
-            // Reset form state
-            registrationForm.reset();
-            membersContainer.innerHTML = '';
-            memberCount = 1;
-            addMemberBtn.disabled = false;
-            addMemberBtn.textContent = "Add Member (Max 4)";
-            addMemberBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }).catch((error) => {
-            console.error("Error adding document: ", error);
-            showModal('Registration Failed', `An error occurred. Please check the console for details. [${error.message}]`, false);
-        }).finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Register Team';
-        });
-    });
-</script>
+            if (isError) {
+                notificationEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
+            } else {
+                notificationEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
+            }
+            
+            notificationEl.classList.remove('hidden');
 
+            setTimeout(() => {
+                notificationEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        // --- Popup Functions ---
+        window.showPopup = function(info) {
+            currentEvent = info.event;
+            const popup = document.getElementById('popup');
+            const backdrop = document.getElementById('popup-backdrop');
+            
+            document.getElementById('popupTitle').textContent = "Talk Details";
+            document.getElementById('popupDetails').innerHTML = `
+                <p><strong class="font-semibold text-[#6f635b]">Topic:</strong> ${currentEvent.extendedProps.topic}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Speaker:</strong> ${currentEvent.extendedProps.name}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Email:</strong> ${currentEvent.extendedProps.email}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Semester:</strong> ${currentEvent.extendedProps.semester}</p>
+                <p><strong class="font-semibold text-[#6f635b]">Date:</strong> ${currentEvent.startStr}</p>
+            `;
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('notification').classList.add('hidden');
+            
+            popup.classList.remove('hidden');
+            backdrop.classList.remove('hidden');
+        }
+
+        window.closePopup = function() {
+            currentEvent = null;
+            document.getElementById('popup').classList.add('hidden');
+            document.getElementById('popup-backdrop').classList.add('hidden');
+        }
+
+        window.confirmDelete = function() {
+            const password = document.getElementById('passwordInput').value;
+            if (password !== 'astrodingra') {
+                showNotification('Incorrect password!', true);
+                return;
+            }
+
+            const eventId = currentEvent.id;
+            remove(ref(db, 'talks/' + eventId))
+                .then(() => {
+                    console.log('Talk deleted successfully from Firebase.');
+                    closePopup();
+                })
+                .catch((error) => {
+                    console.error("Error deleting talk: ", error);
+                    showNotification('Failed to delete talk.', true);
+                });
+        }
+
+        // --- Updated Reminder Function ---
+        window.sendReminder = function() {
+            if (!currentEvent) return;
+
+            const password = document.getElementById('passwordInput').value;
+            if (password !== 'astrodingra') {
+                showNotification('Incorrect password!', true);
+                return;
+            }
+
+            const { name, topic, email } = currentEvent.extendedProps;
+            // Create a date object in the local timezone to prevent off-by-one day errors
+            const talkDateObj = new Date(currentEvent.startStr + 'T00:00:00');
+            const talkDate = talkDateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const subject = `Reminder: Your Physics Club Talk on "${topic}"`;
+            const body = `
+Dear ${name},
+
+This is a friendly reminder about your upcoming talk for the GNDU Physics Club.
+
+Topic: ${topic}
+Date: ${talkDate}
+
+We're looking forward to your presentation!
+
+Best regards,
+GNDU Physics Club
+            `.trim();
+
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+            showNotification('Reminder email client opened.', false);
+        }
+
+
+        // --- DOMContentLoaded Listener ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+            
+            // --- RESPONSIVE CALENDAR OPTIONS ---
+            const isMobile = window.innerWidth < 768;
+
+            let calendarOptions = {
+                height: 'auto',
+                events: [],
+                eventClick: function(info) {
+                    showPopup(info);
+                },
+                // Desktop settings
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                }
+            };
+
+            // Overwrite options for mobile
+            if (isMobile) {
+                calendarOptions.initialView = 'listWeek'; // Better default view for mobile
+                calendarOptions.headerToolbar = {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'today'
+                };
+                calendarOptions.footerToolbar = { // Move view switcher to footer
+                    center: 'dayGridMonth,listWeek'
+                };
+            }
+            
+            calendar = new FullCalendar.Calendar(calendarEl, calendarOptions);
+            calendar.render();
+
+            onValue(talksRef, (snapshot) => {
+                const data = snapshot.val();
+                const events = [];
+                for (let key in data) {
+                    const talk = data[key];
+                    events.push({
+                        id: key,
+                        title: talk.topic,
+                        start: talk.date,
+                        allDay: true,
+                        extendedProps: {
+                            name: talk.name,
+                            email: talk.email, // Storing email
+                            semester: talk.semester,
+                            topic: talk.topic
+                        }
+                    });
+                }
+                calendar.removeAllEvents();
+                calendar.addEventSource(events);
+            });
+
+            const talkForm = document.getElementById('talkForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const successMessage = document.getElementById('successMessage');
+
+            talkForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const semester = document.getElementById('semester').value;
+                const topic = document.getElementById('topic').value;
+                const date = document.getElementById('date').value;
+
+                const newTalkRef = push(talksRef);
+                
+                set(newTalkRef, {
+                    name: name,
+                    email: email,
+                    semester: semester,
+                    topic: topic,
+                    date: date
+                }).then(() => {
+                    talkForm.reset();
+                    dateInput.setAttribute('min', today);
+                    successMessage.classList.remove('hidden');
+                    setTimeout(() => {
+                        successMessage.classList.add('hidden');
+                    }, 4000);
+                }).catch((error) => {
+                    showNotification('There was an error submitting your proposal.', true);
+                }).finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Proposal';
+                });
+            });
+        });
+    </script>
 </body>
 </html>
