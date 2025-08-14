@@ -32,8 +32,8 @@
 </head>
 <body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4 relative">
     
-    <!-- Corner countdown timer display -->
-    <div id="corner-countdown" class="hidden absolute top-4 right-4 bg-red-100 text-red-700 px-3 py-1.5 rounded-lg shadow-lg text-sm font-bold border border-red-200"></div>
+    <!-- Big Corner countdown timer display -->
+    <div id="corner-countdown" class="hidden absolute top-5 right-5 bg-white text-red-600 p-4 rounded-full shadow-2xl text-4xl font-bold border-4 border-red-200 w-24 h-24 flex items-center justify-center"></div>
 
     <div id="app" class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-8 space-y-6">
         <!-- Initial View: Role Selection -->
@@ -220,8 +220,8 @@
 
                 const configDoc = await getDoc(doc(db, "quizConfig", "passwords"));
                 if (!configDoc.exists()) {
-                    await setDoc(doc(db, "quizConfig", "passwords"), { admin: "terabaap", participant: "quiz25" });
-                    errorEl.innerText = "First-time setup complete. Default passwords are 'terabaap' (Admin) and 'quiz25' (Participant). Please try again.";
+                    await setDoc(doc(db, "quizConfig", "passwords"), { admin: "terabaap", participant: "nspd25" });
+                    errorEl.innerText = "First-time setup complete. Default passwords have been set. Please try again.";
                     return;
                 }
                 
