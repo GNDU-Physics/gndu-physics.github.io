@@ -3,14 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Firebase Quiz</title>
+    <title>Real-Time Firebase Quiz - XP Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Tahoma', sans-serif;
+            background-image: url('https://specials-images.forbesimg.com/imageserve/6683c1640eb9ff99522c17f0/Misty-Mountains/960x0.jpg?fit=scale'); /* Starry space background */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .win-xp-container {
+            background-color: #ECE9D8;
+            border: 2px solid #003399;
+            border-radius: 8px;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.5);
+        }
+        .win-xp-title-bar {
+            background: linear-gradient(to right, #0058e5, #3a8cff);
+            color: white;
+            padding: 4px 8px;
+            font-weight: bold;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+        .win-xp-button {
+            background-color: #f0f0f0;
+            border: 1px solid #707070;
+            border-radius: 3px;
+            box-shadow: inset -1px -1px 0px #a0a0a0, inset 1px 1px 0px #ffffff;
+            font-weight: normal;
+        }
+        .win-xp-button:active {
+            box-shadow: inset 1px 1px 0px #a0a0a0, inset -1px -1px 0px #ffffff;
+        }
+        .win-xp-input {
+            border: 1px solid #7f9db9;
+            background-color: white;
+        }
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #0058e5;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -20,92 +55,87 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Custom styles for the card-like appearance */
-        .card {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-            margin-top: 1.5rem;
-        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4 relative">
+<body class="flex items-center justify-center min-h-screen p-4">
     
     <!-- Big Corner countdown timer display -->
-    <div id="corner-countdown" class="hidden absolute top-5 right-5 bg-white text-red-600 p-4 rounded-full shadow-2xl text-4xl font-bold border-4 border-red-200 w-24 h-24 flex items-center justify-center"></div>
+    <div id="corner-countdown" class="hidden absolute top-5 right-5 bg-white text-red-600 p-4 rounded-full shadow-2xl text-4xl font-bold border-4 border-red-200 w-24 h-24 flex items-center justify-center win-xp-container"></div>
 
-    <div id="app" class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-8 space-y-6">
-        <!-- Initial View: Role Selection -->
-        <div id="role-selection-view" class="text-center">
-            <h1 class="text-3xl font-bold mb-6 text-gray-900">Welcome to the Quiz!</h1>
-            <p class="text-gray-600 mb-8">Please select your role to continue.</p>
-            <div class="space-y-4">
-                <button onclick="showLogin('admin')" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md">I am an Admin</button>
-                <button onclick="showLogin('participant')" class="w-full bg-gray-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-300 shadow-md">I am a Participant</button>
-            </div>
-        </div>
-
-        <!-- Login View -->
-        <div id="login-view" class="hidden text-center">
-            <h2 id="login-title" class="text-2xl font-bold mb-6 text-gray-900"></h2>
-            <input type="password" id="password-input" class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter Password">
-            <input type="text" id="name-input" class="w-full border border-gray-300 p-3 rounded-lg mb-4 hidden" placeholder="Enter Your Name/Team Name">
-            <button onclick="handleLogin()" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 shadow-md">Continue</button>
-            <button onclick="showRoleSelection()" class="mt-4 text-indigo-600 hover:underline">Go Back</button>
-            <p id="login-error" class="text-red-500 mt-4"></p>
-        </div>
-
-        <!-- Admin View -->
-        <div id="admin-view" class="hidden text-center">
-            <h2 class="text-2xl font-bold mb-2 text-gray-900">Admin Dashboard</h2>
-            <p class="text-gray-600 mb-6">Control the quiz from here.</p>
-            <div id="admin-status" class="mb-6 p-4 bg-gray-100 rounded-lg"></div>
-            <div id="admin-timer" class="hidden text-2xl font-bold text-red-600 bg-red-100 px-5 py-2 rounded-xl shadow-md my-4 mx-auto w-fit"></div>
-            <button id="start-quiz-btn" onclick="startQuiz()" class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed">Start Quiz for All Participants</button>
-            <button id="show-results-btn" onclick="showAdminResults()" class="hidden mt-4 w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 shadow-lg">Show Results</button>
-            <button onclick="resetQuiz()" class="mt-4 w-full bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition duration-300 shadow-lg">Reset Quiz</button>
-            
-            <div id="admin-ranking-view" class="hidden card text-left">
-                <h3 class="text-xl font-bold mb-4 text-center">Final Results</h3>
-                <div id="admin-ranking-list" class="space-y-3"></div>
-            </div>
-        </div>
-
-        <!-- Participant View -->
-        <div id="participant-view" class="hidden">
-            <!-- Waiting Screen -->
-            <div id="waiting-screen" class="text-center">
-                <h2 class="text-2xl font-bold mb-4 text-gray-900">Welcome, <span id="participant-name"></span>!</h2>
-                <p class="text-gray-600 mb-6">The quiz will begin shortly. Please wait for the admin to start.</p>
-                <div class="loader mx-auto"></div>
-            </div>
-
-            <!-- Quiz Screen -->
-            <div id="quiz-screen" class="hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">Quiz in Progress</h2>
-                    <div id="timer" class="text-2xl font-bold text-red-600 bg-red-100 px-5 py-2 rounded-xl shadow-md">01:00</div>
-                </div>
-                <div id="question-container" class="bg-gray-50 p-6 rounded-lg shadow-inner">
-                    <p class="text-lg font-semibold mb-4" id="question-text"></p>
-                    <div id="options-container" class="space-y-3"></div>
-                </div>
-                <div class="flex justify-between mt-6">
-                    <button id="prev-btn" onclick="navigateQuestion(-1)" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">Previous</button>
-                    <button id="next-btn" onclick="navigateQuestion(1)" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 transition">Next</button>
-                    <button id="submit-btn" onclick="submitQuiz()" class="hidden bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 transition">Submit</button>
+    <div id="app" class="win-xp-container w-full max-w-lg mx-auto">
+        <div class="win-xp-title-bar">Quiz Application</div>
+        <div class="p-8 space-y-6">
+            <!-- Initial View: Role Selection -->
+            <div id="role-selection-view" class="text-center">
+                <h1 class="text-2xl font-bold mb-6 text-black">Welcome to the Quiz!</h1>
+                <p class="text-black mb-8">Please select your role to continue.</p>
+                <div class="space-y-4">
+                    <button onclick="showLogin('admin')" class="w-full py-2 px-4 win-xp-button">I am an Admin</button>
+                    <button onclick="showLogin('participant')" class="w-full py-2 px-4 win-xp-button">I am a Participant</button>
                 </div>
             </div>
 
-            <!-- Ranking Screen -->
-            <div id="ranking-screen" class="hidden text-center">
-                 <div class="card">
-                    <h2 class="text-3xl font-bold mb-6 text-gray-900">Quiz Over!</h2>
-                    <p class="text-gray-600 mb-6">Here are the final rankings:</p>
-                    <div id="ranking-list" class="space-y-3 text-left"></div>
-                 </div>
-                 <button onclick="showRoleSelection()" class="mt-8 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md">Play Again</button>
+            <!-- Login View -->
+            <div id="login-view" class="hidden text-center">
+                <h2 id="login-title" class="text-xl font-bold mb-6 text-black"></h2>
+                <input type="password" id="password-input" class="w-full p-2 mb-4 win-xp-input" placeholder="Enter Password">
+                <input type="text" id="name-input" class="w-full p-2 mb-4 hidden win-xp-input" placeholder="Enter Your Name/Team Name">
+                <button onclick="handleLogin()" class="w-full py-2 px-4 win-xp-button bg-green-500 text-white font-bold">Continue</button>
+                <button onclick="showRoleSelection()" class="mt-4 text-blue-700 hover:underline">Go Back</button>
+                <p id="login-error" class="text-red-700 mt-4"></p>
+            </div>
+
+            <!-- Admin View -->
+            <div id="admin-view" class="hidden text-center">
+                <h2 class="text-xl font-bold mb-2 text-black">Admin Dashboard</h2>
+                <p class="text-black mb-6">Control the quiz from here.</p>
+                <div id="admin-status" class="mb-6 p-4 bg-gray-200 rounded-sm border border-gray-400"></div>
+                <div id="admin-timer" class="hidden text-2xl font-bold text-red-600 bg-white p-2 rounded-sm border border-gray-400 my-4 mx-auto w-fit"></div>
+                <button id="start-quiz-btn" onclick="startQuiz()" class="w-full py-2 px-4 win-xp-button bg-blue-600 text-white font-bold disabled:bg-gray-400 disabled:text-gray-700">Start Quiz</button>
+                <button id="show-results-btn" onclick="showAdminResults()" class="hidden mt-4 w-full py-2 px-4 win-xp-button bg-green-500 text-white font-bold">Show Results</button>
+                <button onclick="resetQuiz()" class="mt-4 w-full py-2 px-4 win-xp-button bg-red-600 text-white font-bold">Reset Quiz</button>
+                
+                <div id="admin-ranking-view" class="hidden mt-6 text-left bg-white p-4 border border-gray-400 rounded-sm">
+                    <h3 class="text-lg font-bold mb-4 text-center">Final Results</h3>
+                    <div id="admin-ranking-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Participant View -->
+            <div id="participant-view" class="hidden">
+                <!-- Waiting Screen -->
+                <div id="waiting-screen" class="text-center">
+                    <h2 class="text-xl font-bold mb-4 text-black">Welcome, <span id="participant-name"></span>!</h2>
+                    <p class="text-black mb-6">The quiz will begin shortly. Please wait for the admin to start.</p>
+                    <div class="loader mx-auto"></div>
+                </div>
+
+                <!-- Quiz Screen -->
+                <div id="quiz-screen" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-black">Quiz in Progress</h2>
+                        <div id="timer" class="text-xl font-bold text-red-600 bg-white p-2 rounded-sm border border-gray-400">01:00</div>
+                    </div>
+                    <div id="question-container" class="bg-white p-4 border border-gray-400 rounded-sm">
+                        <p class="text-md font-bold mb-4" id="question-text"></p>
+                        <div id="options-container" class="space-y-2"></div>
+                    </div>
+                    <div class="flex justify-between mt-6">
+                        <button id="prev-btn" onclick="navigateQuestion(-1)" class="py-2 px-6 win-xp-button">Previous</button>
+                        <button id="next-btn" onclick="navigateQuestion(1)" class="py-2 px-6 win-xp-button bg-blue-600 text-white">Next</button>
+                        <button id="submit-btn" onclick="submitQuiz()" class="hidden py-2 px-6 win-xp-button bg-green-500 text-white">Submit</button>
+                    </div>
+                </div>
+
+                <!-- Ranking Screen -->
+                <div id="ranking-screen" class="hidden text-center">
+                     <div class="bg-white p-6 border border-gray-400 rounded-sm">
+                        <h2 class="text-2xl font-bold mb-6 text-black">Quiz Over!</h2>
+                        <p class="text-black mb-6">Here are the final rankings:</p>
+                        <div id="ranking-list" class="space-y-2 text-left"></div>
+                     </div>
+                     <button onclick="showRoleSelection()" class="mt-8 py-2 px-4 win-xp-button bg-blue-600 text-white font-bold">Play Again</button>
+                </div>
             </div>
         </div>
     </div>
@@ -331,17 +361,17 @@
         };
 
         // --- Sound and Timer Functions ---
-        function playBeep() {
+        function playBeep(duration = 0.1, freq = 880) {
             if (!audioCtx || audioCtx.state === 'suspended') return;
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
             gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
             oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.1);
+            oscillator.stop(audioCtx.currentTime + duration);
         }
         
         function createCountdown(element, state, playSound = false) {
@@ -351,8 +381,10 @@
                 let timeLeft = quizDuration - elapsedSeconds;
                 if (timeLeft >= 0) {
                     element.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
-                    if (playSound && timeLeft <= 10 && timeLeft > 0) {
-                        playBeep();
+                    if (playSound) {
+                        if (timeLeft === 10) playBeep(0.5); // Long beep at 10
+                        else if (timeLeft < 10 && timeLeft > 0) playBeep(); // Short beeps
+                        else if (timeLeft === 0) playBeep(0.7, 523); // Final long beep
                     }
                 } else {
                     element.innerText = "00:00";
@@ -427,7 +459,7 @@
                 const isSelected = userAnswers[currentQuestionIndex] === index;
                 const button = document.createElement('button');
                 button.innerText = option;
-                button.className = `w-full text-left p-3 rounded-lg border border-gray-300 transition ${isSelected ? 'bg-indigo-500 text-white' : 'bg-white hover:bg-indigo-100'}`;
+                button.className = `w-full text-left p-2 win-xp-button ${isSelected ? 'bg-blue-300' : 'bg-white'}`;
                 button.onclick = () => selectAnswer(index);
                 optionsContainer.appendChild(button);
             });
@@ -468,7 +500,7 @@
                 if (!isAutoSubmit) {
                     document.getElementById('quiz-screen').classList.add('hidden');
                     document.getElementById('waiting-screen').style.display = 'block';
-                    document.getElementById('waiting-screen').innerHTML = `<h2 class="text-2xl font-bold mb-4">Submission successful!</h2><p>Waiting for results...</p><div class="loader mx-auto mt-6"></div>`;
+                    document.getElementById('waiting-screen').innerHTML = `<h2 class="text-xl font-bold mb-4 text-black">Submission successful!</h2><p class="text-black">Waiting for results...</p><div class="loader mx-auto mt-6"></div>`;
                 }
             } catch (e) {
                 console.error("Error submitting quiz:", e);
@@ -489,30 +521,30 @@
                 rankings.sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
                 targetElement.innerHTML = '';
                 if (rankings.length === 0) {
-                    targetElement.innerHTML = '<p class="text-gray-500 text-center">No participants have joined yet.</p>';
+                    targetElement.innerHTML = '<p class="text-center">No participants have joined yet.</p>';
                     return;
                 }
                 rankings.forEach((p, index) => {
                     const rankEl = document.createElement('div');
-                    let rankClasses = 'flex justify-between items-center p-4 rounded-lg border ';
+                    let rankClasses = 'flex justify-between items-center p-2 rounded-sm border ';
                     let resultHtml;
                     if (p.submitted) {
-                        if (index === 0) rankClasses += 'bg-yellow-100 border-yellow-300';
-                        else if (index === 1) rankClasses += 'bg-gray-200 border-gray-300';
-                        else if (index === 2) rankClasses += 'bg-orange-100 border-orange-300';
-                        else rankClasses += 'bg-gray-100 border-gray-200';
-                        resultHtml = `<div class="text-right"><span class="font-bold text-indigo-600">${p.score}/${questions.length}</span><span class="text-sm text-gray-500 ml-2">(${p.timeTaken}s)</span></div>`;
+                        if (index === 0) rankClasses += 'bg-yellow-200 border-yellow-400';
+                        else if (index === 1) rankClasses += 'bg-gray-300 border-gray-400';
+                        else if (index === 2) rankClasses += 'bg-orange-200 border-orange-400';
+                        else rankClasses += 'bg-gray-200 border-gray-300';
+                        resultHtml = `<div class="text-right"><span class="font-bold text-blue-700">${p.score}/${questions.length}</span><span class="text-sm text-black ml-2">(${p.timeTaken}s)</span></div>`;
                     } else {
-                        rankClasses += 'bg-red-50 border-red-200 opacity-70';
-                        resultHtml = `<div class="text-right"><span class="text-sm font-medium text-red-700">Did not finish</span></div>`;
+                        rankClasses += 'bg-red-200 border-red-400 opacity-70';
+                        resultHtml = `<div class="text-right"><span class="text-sm font-bold text-red-800">Did not finish</span></div>`;
                     }
                     rankEl.className = rankClasses;
-                    rankEl.innerHTML = `<div class="flex items-center"><span class="font-bold text-lg w-8">${index + 1}.</span><span class="font-semibold text-gray-800">${p.name}</span></div>${resultHtml}`;
+                    rankEl.innerHTML = `<div class="flex items-center"><span class="font-bold text-lg w-8">${index + 1}.</span><span class="font-bold text-black">${p.name}</span></div>${resultHtml}`;
                     targetElement.appendChild(rankEl);
                 });
             } catch (e) {
                 console.error("Error fetching rankings:", e);
-                targetElement.innerHTML = '<p class="text-red-500 text-center">Could not load rankings.</p>';
+                targetElement.innerHTML = '<p class="text-red-700 text-center">Could not load rankings.</p>';
             }
         }
         
@@ -523,4 +555,3 @@
     </script>
 </body>
 </html>
-
