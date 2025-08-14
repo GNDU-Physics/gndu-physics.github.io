@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Firebase Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom styles for the card-like appearance */
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4 relative">
+    
+    <!-- Corner countdown timer display -->
+    <div id="corner-countdown" class="hidden absolute top-4 right-4 bg-red-100 text-red-700 px-3 py-1.5 rounded-lg shadow-lg text-sm font-bold border border-red-200"></div>
+
+    <div id="app" class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        <!-- Initial View: Role Selection -->
+        <div id="role-selection-view" class="text-center">
+            <h1 class="text-3xl font-bold mb-6 text-gray-900">Welcome to the Quiz!</h1>
+            <p class="text-gray-600 mb-8">Please select your role to continue.</p>
+            <div class="space-y-4">
+                <button onclick="showLogin('admin')" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md">I am an Admin</button>
+                <button onclick="showLogin('participant')" class="w-full bg-gray-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-300 shadow-md">I am a Participant</button>
+            </div>
+        </div>
+
+        <!-- Login View -->
+        <div id="login-view" class="hidden text-center">
+            <h2 id="login-title" class="text-2xl font-bold mb-6 text-gray-900"></h2>
+            <input type="password" id="password-input" class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter Password">
+            <input type="text" id="name-input" class="w-full border border-gray-300 p-3 rounded-lg mb-4 hidden" placeholder="Enter Your Name/Team Name">
+            <button onclick="handleLogin()" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 shadow-md">Continue</button>
+            <button onclick="showRoleSelection()" class="mt-4 text-indigo-600 hover:underline">Go Back</button>
+            <p id="login-error" class="text-red-500 mt-4"></p>
+        </div>
+
+        <!-- Admin View -->
+        <div id="admin-view" class="hidden text-center">
+            <h2 class="text-2xl font-bold mb-2 text-gray-900">Admin Dashboard</h2>
+            <p class="text-gray-600 mb-6">Control the quiz from here.</p>
+            <div id="admin-status" class="mb-6 p-4 bg-gray-100 rounded-lg"></div>
+            <div id="admin-timer" class="hidden text-2xl font-bold text-red-600 bg-red-100 px-5 py-2 rounded-xl shadow-md my-4 mx-auto w-fit"></div>
+            <button id="start-quiz-btn" onclick="startQuiz()" class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed">Start Quiz for All Participants</button>
+            <button id="show-results-btn" onclick="showAdminResults()" class="hidden mt-4 w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 shadow-lg">Show Results</button>
+            <button onclick="resetQuiz()" class="mt-4 w-full bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition duration-300 shadow-lg">Reset Quiz</button>
+            
+            <div id="admin-ranking-view" class="hidden card text-left">
+                <h3 class="text-xl font-bold mb-4 text-center">Final Results</h3>
+                <div id="admin-ranking-list" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- Participant View -->
+        <div id="participant-view" class="hidden">
+            <!-- Waiting Screen -->
+            <div id="waiting-screen" class="text-center">
+                <h2 class="text-2xl font-bold mb-4 text-gray-900">Welcome, <span id="participant-name"></span>!</h2>
+                <p class="text-gray-600 mb-6">The quiz will begin shortly. Please wait for the admin to start.</p>
+                <div class="loader mx-auto"></div>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="quiz-screen" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Quiz in Progress</h2>
+                    <div id="timer" class="text-2xl font-bold text-red-600 bg-red-100 px-5 py-2 rounded-xl shadow-md">01:00</div>
+                </div>
+                <div id="question-container" class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <p class="text-lg font-semibold mb-4" id="question-text"></p>
+                    <div id="options-container" class="space-y-3"></div>
+                </div>
+                <div class="flex justify-between mt-6">
+                    <button id="prev-btn" onclick="navigateQuestion(-1)" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">Previous</button>
+                    <button id="next-btn" onclick="navigateQuestion(1)" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 transition">Next</button>
+                    <button id="submit-btn" onclick="submitQuiz()" class="hidden bg-green-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-600 transition">Submit</button>
+                </div>
+            </div>
+
+            <!-- Ranking Screen -->
+            <div id="ranking-screen" class="hidden text-center">
+                 <div class="card">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900">Quiz Over!</h2>
+                    <p class="text-gray-600 mb-6">Here are the final rankings:</p>
+                    <div id="ranking-list" class="space-y-3 text-left"></div>
+                 </div>
+                 <button onclick="showRoleSelection()" class="mt-8 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRyBGcSgLaH6jbqgDY9Yn8t1Rw9o-jWJw",
+            authDomain: "nspd25-996bf.firebaseapp.com",
+            databaseURL: "https://nspd25-996bf-default-rtdb.firebaseio.com",
+            projectId: "nspd25-996bf",
+            storageBucket: "nspd25-996bf.appspot.com",
+            messagingSenderId: "678844470957",
+            appId: "1:678844470957:web:04a29772c95ebf67c21824",
+            measurementId: "G-GRCBT2KMKH"
+        };
+
+        // --- App Initialization ---
+        let app, db, auth, userId;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            document.body.innerHTML = `<div class="text-red-500 p-4">Error: Firebase configuration is missing or invalid.</div>`;
+        }
+
+        // --- Global State ---
+        let currentRole = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let quizTimerInterval;
+        let cornerTimerInterval;
+        let adminTimerInterval;
+        let audioCtx; // For generating sound
+        let quizStartTime;
+        let participantDocId = null;
+        let isSubmitted = false;
+        const quizDuration = 60;
+        const questions = [
+            { text: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], correctAnswer: 2 },
+            { text: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], correctAnswer: 1 },
+            { text: "What is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correctAnswer: 3 },
+            { text: "Who wrote 'To Kill a Mockingbird'?", options: ["Harper Lee", "J.K. Rowling", "Ernest Hemingway", "Mark Twain"], correctAnswer: 0 },
+            { text: "What is the chemical symbol for water?", options: ["O2", "CO2", "H2O", "NaCl"], correctAnswer: 2 },
+            { text: "How many continents are there?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+            { text: "What is the square root of 64?", options: ["6", "7", "8", "9"], correctAnswer: 2 }
+        ];
+
+        // --- Authentication ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                setupQuizStateListener();
+            } else {
+                signInAnonymously(auth).catch(console.error);
+            }
+        });
+
+        // --- UI Navigation ---
+        const views = ['role-selection-view', 'login-view', 'admin-view', 'participant-view'];
+        function showView(viewId) {
+            views.forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        window.showLogin = (role) => {
+            currentRole = role;
+            showView('login-view');
+            document.getElementById('login-title').innerText = `${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
+            document.getElementById('login-error').innerText = '';
+            document.getElementById('password-input').value = '';
+            const nameInput = document.getElementById('name-input');
+            nameInput.classList.toggle('hidden', role !== 'participant');
+            if (role === 'participant') nameInput.value = '';
+        };
+
+        window.showRoleSelection = () => {
+            clearInterval(quizTimerInterval);
+            clearInterval(adminTimerInterval);
+            stopCornerCountdown();
+            participantDocId = null;
+            isSubmitted = false;
+            showView('role-selection-view');
+            document.getElementById('waiting-screen').style.display = 'block';
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('ranking-screen').classList.add('hidden');
+        };
+        
+        // --- Login Logic ---
+        window.handleLogin = async () => {
+            const password = document.getElementById('password-input').value;
+            const name = document.getElementById('name-input').value;
+            const errorEl = document.getElementById('login-error');
+
+            if (!password || (currentRole === 'participant' && !name)) {
+                errorEl.innerText = "All fields are required.";
+                return;
+            }
+
+            try {
+                // Initialize AudioContext on user interaction
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                const configDoc = await getDoc(doc(db, "quizConfig", "passwords"));
+                if (!configDoc.exists()) {
+                    await setDoc(doc(db, "quizConfig", "passwords"), { admin: "terabaap", participant: "quiz25" });
+                    errorEl.innerText = "First-time setup complete. Default passwords are 'admin123' (Admin) and 'quiz123' (Participant). Please try again.";
+                    return;
+                }
+                
+                const passwords = configDoc.data();
+                if (currentRole === 'admin' && password === passwords.admin) {
+                    showView('admin-view');
+                } else if (currentRole === 'participant' && password === passwords.participant) {
+                    isSubmitted = false; // Reset submission flag for new participant
+                    const newDocRef = await addDoc(collection(db, "participants"), {
+                        name: name, authUid: userId, answers: {}, score: 0, timeTaken: 0, submitted: false
+                    });
+                    participantDocId = newDocRef.id;
+                    document.getElementById('participant-name').innerText = name;
+                    showView('participant-view');
+                } else {
+                    errorEl.innerText = "Incorrect password.";
+                }
+            } catch (e) {
+                console.error("Login error:", e);
+                errorEl.innerText = "An error occurred.";
+            }
+        };
+
+        // --- Real-Time Listener ---
+        function setupQuizStateListener() {
+            onSnapshot(doc(db, "quizState", "current"), (docSnap) => {
+                const state = docSnap.exists() ? docSnap.data() : { status: 'waiting' };
+                updateAdminStatus(`Status: ${state.status}`);
+                document.getElementById('start-quiz-btn').disabled = state.status === "running";
+                document.getElementById('show-results-btn').classList.toggle('hidden', state.status !== 'finished');
+                
+                if (currentRole === 'admin') {
+                    if (state.status === 'running') {
+                        startAdminTimer(state);
+                    } else {
+                        stopAdminTimer();
+                    }
+                }
+
+                if (state.status !== 'finished') {
+                    document.getElementById('admin-ranking-view').classList.add('hidden');
+                }
+                if (currentRole === 'participant') handleParticipantStateChange(state);
+            });
+        }
+
+        async function handleParticipantStateChange(state) {
+            const waitingScreen = document.getElementById('waiting-screen');
+            const quizScreen = document.getElementById('quiz-screen');
+            const rankingScreen = document.getElementById('ranking-screen');
+
+            switch(state.status) {
+                case 'waiting':
+                    waitingScreen.style.display = 'block';
+                    quizScreen.classList.add('hidden');
+                    rankingScreen.classList.add('hidden');
+                    stopCornerCountdown();
+                    break;
+                case 'running':
+                    if (quizScreen.classList.contains('hidden')) {
+                        waitingScreen.style.display = 'none';
+                        quizScreen.classList.remove('hidden');
+                        rankingScreen.classList.add('hidden');
+                        startParticipantQuiz(state);
+                    }
+                    break;
+                case 'finished':
+                    if (!isSubmitted) {
+                        await submitQuiz(true);
+                    }
+                    clearInterval(quizTimerInterval);
+                    stopCornerCountdown();
+                    waitingScreen.style.display = 'none';
+                    quizScreen.classList.add('hidden');
+                    rankingScreen.classList.remove('hidden');
+                    displayRankings();
+                    break;
+            }
+        }
+        
+        function updateAdminStatus(message) {
+            const statusEl = document.getElementById('admin-status');
+            if (statusEl) statusEl.innerText = message;
+        }
+
+        // --- Admin Actions ---
+        window.startQuiz = async () => {
+            await setDoc(doc(db, "quizState", "current"), { status: "running", startTime: Date.now() });
+            setTimeout(async () => {
+                await setDoc(doc(db, "quizState", "current"), { status: "finished" }, { merge: true });
+            }, quizDuration * 1000);
+        };
+
+        window.resetQuiz = async () => {
+            await setDoc(doc(db, "quizState", "current"), { status: "waiting" });
+            const participantsSnapshot = await getDocs(collection(db, "participants"));
+            const batch = writeBatch(db);
+            participantsSnapshot.forEach((doc) => batch.delete(doc.ref));
+            await batch.commit();
+            alert("Quiz and all participant data have been reset.");
+        };
+        
+        window.showAdminResults = () => {
+            const rankingView = document.getElementById('admin-ranking-view');
+            rankingView.classList.toggle('hidden');
+            if (!rankingView.classList.contains('hidden')) displayAdminRankings();
+        };
+
+        // --- Sound and Timer Functions ---
+        function playBeep() {
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+        
+        function createCountdown(element, state, playSound = false) {
+            const globalStartTime = state.startTime;
+            const update = () => {
+                const elapsedSeconds = Math.floor((Date.now() - globalStartTime) / 1000);
+                let timeLeft = quizDuration - elapsedSeconds;
+                if (timeLeft >= 0) {
+                    element.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
+                    if (playSound && timeLeft <= 10 && timeLeft > 0) {
+                        playBeep();
+                    }
+                } else {
+                    element.innerText = "00:00";
+                    return true; // Indicates timer finished
+                }
+                return false; // Indicates timer still running
+            };
+            return update;
+        }
+
+        function startAdminTimer(state) {
+            const timerEl = document.getElementById('admin-timer');
+            if (!timerEl) return;
+            timerEl.classList.remove('hidden');
+            if (adminTimerInterval) clearInterval(adminTimerInterval);
+            const update = createCountdown(timerEl, state, true);
+            update(); // Initial call
+            adminTimerInterval = setInterval(() => {
+                if (update()) clearInterval(adminTimerInterval);
+            }, 1000);
+        }
+
+        function stopAdminTimer() {
+            const timerEl = document.getElementById('admin-timer');
+            if (timerEl) timerEl.classList.add('hidden');
+            clearInterval(adminTimerInterval);
+        }
+
+        function startCornerCountdown(state) {
+            const cornerTimerEl = document.getElementById('corner-countdown');
+            if (!cornerTimerEl) return;
+            cornerTimerEl.classList.remove('hidden');
+            if (cornerTimerInterval) clearInterval(cornerTimerInterval);
+            const update = createCountdown(cornerTimerEl, state);
+            update(); // Initial call
+            cornerTimerInterval = setInterval(() => {
+                if (update()) clearInterval(cornerTimerInterval);
+            }, 1000);
+        }
+
+        function stopCornerCountdown() {
+            const cornerTimerEl = document.getElementById('corner-countdown');
+            if (cornerTimerEl) cornerTimerEl.classList.add('hidden');
+            clearInterval(cornerTimerInterval);
+        }
+
+        // --- Participant Quiz Logic ---
+        function startParticipantQuiz(state) {
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            quizStartTime = Date.now();
+            renderQuestion();
+            startCornerCountdown(state);
+
+            const timerEl = document.getElementById('timer');
+            if (quizTimerInterval) clearInterval(quizTimerInterval);
+            const update = createCountdown(timerEl, state, true);
+            update(); // Initial call
+            quizTimerInterval = setInterval(() => {
+                if (update()) {
+                    clearInterval(quizTimerInterval);
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${question.text}`;
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const isSelected = userAnswers[currentQuestionIndex] === index;
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className = `w-full text-left p-3 rounded-lg border border-gray-300 transition ${isSelected ? 'bg-indigo-500 text-white' : 'bg-white hover:bg-indigo-100'}`;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            document.getElementById('prev-btn').style.visibility = currentQuestionIndex === 0 ? 'hidden' : 'visible';
+            document.getElementById('next-btn').classList.toggle('hidden', currentQuestionIndex === questions.length - 1);
+            document.getElementById('submit-btn').classList.toggle('hidden', currentQuestionIndex !== questions.length - 1);
+        }
+
+        function selectAnswer(index) {
+            userAnswers[currentQuestionIndex] = index;
+            renderQuestion();
+        }
+
+        window.navigateQuestion = (direction) => {
+            const newIndex = currentQuestionIndex + direction;
+            if (newIndex >= 0 && newIndex < questions.length) {
+                currentQuestionIndex = newIndex;
+                renderQuestion();
+            }
+        };
+
+        window.submitQuiz = async (isAutoSubmit = false) => {
+            if (isSubmitted) return; // Prevent double submission
+            isSubmitted = true;
+
+            clearInterval(quizTimerInterval);
+            stopCornerCountdown();
+            if (!participantDocId) return console.error("Cannot submit: No participant document ID.");
+            
+            let score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].correctAnswer) score++;
+            }
+            try {
+                await setDoc(doc(db, "participants", participantDocId), {
+                    score: score, timeTaken: Math.round((Date.now() - quizStartTime) / 1000), submitted: true, answers: userAnswers
+                }, { merge: true });
+                if (!isAutoSubmit) {
+                    document.getElementById('quiz-screen').classList.add('hidden');
+                    document.getElementById('waiting-screen').style.display = 'block';
+                    document.getElementById('waiting-screen').innerHTML = `<h2 class="text-2xl font-bold mb-4">Submission successful!</h2><p>Waiting for results...</p><div class="loader mx-auto mt-6"></div>`;
+                }
+            } catch (e) {
+                console.error("Error submitting quiz:", e);
+                alert("Could not submit your answers.");
+            }
+        };
+
+        // --- Ranking Logic ---
+        async function displayRankings() { await renderRankingList(document.getElementById('ranking-list')); }
+        async function displayAdminRankings() { await renderRankingList(document.getElementById('admin-ranking-list')); }
+
+        async function renderRankingList(targetElement) {
+            try {
+                targetElement.innerHTML = '<div class="loader mx-auto"></div>';
+                const participantsSnapshot = await getDocs(collection(db, "participants"));
+                const rankings = [];
+                participantsSnapshot.forEach(doc => rankings.push(doc.data()));
+                rankings.sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
+                targetElement.innerHTML = '';
+                if (rankings.length === 0) {
+                    targetElement.innerHTML = '<p class="text-gray-500 text-center">No participants have joined yet.</p>';
+                    return;
+                }
+                rankings.forEach((p, index) => {
+                    const rankEl = document.createElement('div');
+                    let rankClasses = 'flex justify-between items-center p-4 rounded-lg border ';
+                    let resultHtml;
+                    if (p.submitted) {
+                        if (index === 0) rankClasses += 'bg-yellow-100 border-yellow-300';
+                        else if (index === 1) rankClasses += 'bg-gray-200 border-gray-300';
+                        else if (index === 2) rankClasses += 'bg-orange-100 border-orange-300';
+                        else rankClasses += 'bg-gray-100 border-gray-200';
+                        resultHtml = `<div class="text-right"><span class="font-bold text-indigo-600">${p.score}/${questions.length}</span><span class="text-sm text-gray-500 ml-2">(${p.timeTaken}s)</span></div>`;
+                    } else {
+                        rankClasses += 'bg-red-50 border-red-200 opacity-70';
+                        resultHtml = `<div class="text-right"><span class="text-sm font-medium text-red-700">Did not finish</span></div>`;
+                    }
+                    rankEl.className = rankClasses;
+                    rankEl.innerHTML = `<div class="flex items-center"><span class="font-bold text-lg w-8">${index + 1}.</span><span class="font-semibold text-gray-800">${p.name}</span></div>${resultHtml}`;
+                    targetElement.appendChild(rankEl);
+                });
+            } catch (e) {
+                console.error("Error fetching rankings:", e);
+                targetElement.innerHTML = '<p class="text-red-500 text-center">Could not load rankings.</p>';
+            }
+        }
+        
+        // Initial setup
+        showView('role-selection-view');
+        window.showRoleSelection = showRoleSelection;
+
+    </script>
+</body>
+</html>
