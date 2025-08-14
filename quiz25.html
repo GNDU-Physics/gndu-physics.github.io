@@ -221,7 +221,7 @@
                 const configDoc = await getDoc(doc(db, "quizConfig", "passwords"));
                 if (!configDoc.exists()) {
                     await setDoc(doc(db, "quizConfig", "passwords"), { admin: "terabaap", participant: "quiz25" });
-                    errorEl.innerText = "First-time setup complete. Default passwords are 'admin123' (Admin) and 'quiz123' (Participant). Please try again.";
+                    errorEl.innerText = "First-time setup complete. Default passwords are 'terabaap' (Admin) and 'quiz25' (Participant). Please try again.";
                     return;
                 }
                 
