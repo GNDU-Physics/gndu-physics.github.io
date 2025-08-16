@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Firebase Quiz - XP Edition</title>
+    <title>National Space Day Quiz 2025 </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -182,14 +182,207 @@
         let isSubmitted = false;
         const quizDuration = 60;
         const questions = [
-            { text: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], correctAnswer: 2 },
-            { text: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], correctAnswer: 1 },
-            { text: "What is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correctAnswer: 3 },
-            { text: "Who wrote 'To Kill a Mockingbird'?", options: ["Harper Lee", "J.K. Rowling", "Ernest Hemingway", "Mark Twain"], correctAnswer: 0 },
-            { text: "What is the chemical symbol for water?", options: ["O2", "CO2", "H2O", "NaCl"], correctAnswer: 2 },
-            { text: "How many continents are there?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
-            { text: "What is the square root of 64?", options: ["6", "7", "8", "9"], correctAnswer: 2 }
-        ];
+    {
+        text: "Why does the Chandrasekhar limit exist only for electron-degenerate matter and not for neutron stars or black holes?",
+        options: [
+            "Electrons become relativistic; neutron matter never does",
+            "Electron degeneracy pressure saturates relativistically; neutron stars are set by strong-interaction EOS; black holes ignore pressure once horizons form",
+            "Pair production removes degeneracy only for electrons",
+            "Photons dominate pressure in all compact objects"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "Why is iron the end point of stellar nucleosynthesis in massive stars?",
+        options: [
+            "Iron sinks to the core and blocks convection",
+            "Fusion beyond iron consumes energy; binding energy per nucleon peaks, so further fusion is endothermic",
+            "Neutrinos disintegrate heavier nuclei first",
+            "Radiation pressure fragments iron before fusion"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "What drives the κ-mechanism pulsations in Cepheid and RR Lyrae stars?",
+        options: [
+            "Magnetic buoyancy changing opacity",
+            "Shock heating from stellar winds",
+            "Ionization-zone opacity increase traps heat, raising pressure and causing cyclic expansion/contraction",
+            "Rotational flattening modulating gravity darkening"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Why do galaxy rotation curves remain flat at large radii?",
+        options: [
+            "Gas pressure supports outer disks",
+            "Tidal interactions add angular momentum",
+            "Non-luminous dark matter halo dominates the mass distribution at large radii",
+            "Stellar radiation pressure accelerates outer stars"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Pop I vs Pop II stars differ primarily because:",
+        options: [
+            "They have identical ages but different masses",
+            "Pop I form in halos; Pop II in disks",
+            "Chemical enrichment over time makes Pop I metal-rich in disks; Pop II metal-poor in halo/bulge",
+            "Pop II uniquely undergo CNO burning"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Why do more massive stars live shorter lives?",
+        options: [
+            "They burn cooler and slower",
+            "Convection limits fuel access",
+            "Higher core temperatures cause vastly higher fusion rates that outpace the extra fuel",
+            "Winds shut off fusion early regardless of mass"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Why are CO rotational transitions used to trace H₂ clouds?",
+        options: [
+            "H₂ emits strongly in radio at low temperatures",
+            "CO self-destructs in UV, matching H₂",
+            "CO has bright rotational lines excited at cloud temperatures; H₂ lacks a dipole and is hard to excite",
+            "CO uniquely resists freeze-out"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Why are globular clusters old and metal-poor while open clusters are young and metal-rich?",
+        options: [
+            "Globulars continuously accrete pristine gas",
+            "Open clusters form only in halos",
+            "Globulars formed early with unenriched gas; open clusters form later in enriched disks and disperse quickly",
+            "Stellar winds prevent enrichment in globulars"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "What does the Magorrian relation imply about galaxy–black hole co-evolution?",
+        options: [
+            "Bulges grow after black holes complete growth",
+            "Co-evolution: black-hole feedback and bulge assembly are linked through gas inflow/outflow regulation",
+            "Black-hole mass set only by halo spin",
+            "Disks determine black-hole mass directly"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "What role does the Jeans criterion play in star formation?",
+        options: [
+            "Whether turbulence heats the gas",
+            "Whether magnetic fields amplify",
+            "Whether self-gravity overcomes pressure on a given scale to trigger collapse",
+            "Whether dust forms ice mantles"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Why are OB associations found in spiral arms but not in ellipticals?",
+        options: [
+            "Ellipticals lack any stars",
+            "Spiral shocks compress gas; ellipticals lack cold, dense gas and spiral density waves",
+            "OB stars cannot form in metal-rich gas",
+            "Spiral arms block supernova feedback"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "Why do AGN show broad emission lines?",
+        options: [
+            "Gravitational redshift in the narrow-line region",
+            "Dust scattering in the torus",
+            "High-velocity gas near the black hole produces Doppler broadening; orientation and virial motions dominate",
+            "Stellar absorption fills the lines"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "How do Seyfert Type 1 and Type 2 galaxies differ spectroscopically?",
+        options: [
+            "Type 1 shows only narrow lines; Type 2 only broad lines",
+            "Type 1 shows broad + narrow emission lines; Type 2 shows only narrow lines due to orientation and obscuration",
+            "Type 1 shows absorption features; Type 2 shows only emission",
+            "Both are identical; classification is historical only"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "Why does stellar metallicity generally decline with galactocentric radius?",
+        options: [
+            "Star formation is uniform everywhere",
+            "Outer disks lose metals to radiation pressure",
+            "Inside-out growth and higher central star formation enrich inner regions more than outskirts",
+            "Metals are made only by bulges"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "What is the physical origin of the Eddington limit?",
+        options: [
+            "Electron capture in dense cores",
+            "Luminosity where radiation force on electrons balances gravity on ions, regulating accretion/outflows",
+            "Rotational breakup threshold",
+            "Applies only to stars, not accretion disks"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "Why do pulsars spin down over time?",
+        options: [
+            "Core fusion stops",
+            "Magnetic dipole radiation and particle winds extract rotational energy and angular momentum",
+            "Crusts accrete angular momentum",
+            "External tides accelerate them"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "How is pressure support different in main-sequence stars vs white dwarfs?",
+        options: [
+            "Both supported by gas pressure",
+            "MS: radiation only; WD: gas pressure",
+            "MS: thermal gas (and sometimes radiation) from fusion; WD: electron degeneracy independent of temperature",
+            "WD supported by magnetic fields"
+        ],
+        correctAnswer: 2
+    },
+    {
+        text: "Why are RR Lyrae stars used as standard candles differently from Cepheids?",
+        options: [
+            "RR Lyrae are always younger",
+            "RR Lyrae have nearly constant luminosity; Cepheids use period–luminosity relation",
+            "Cepheids are only in globular clusters",
+            "RR Lyrae vary randomly"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "Why does the Milky Way halo contain mostly pressure-supported stars rather than rotation-supported ones?",
+        options: [
+            "Halo stars are too young to rotate",
+            "Halo assembled through mergers and scattering, producing isotropic velocity dispersions",
+            "Dark matter forces suppress rotation",
+            "Halo gas cools too fast"
+        ],
+        correctAnswer: 1
+    },
+    {
+        text: "Why do synchrotron-emitting electrons in galaxies indicate past supernova activity?",
+        options: [
+            "Dust scattering enhances magnetic fields",
+            "Electrons must be relativistically accelerated in shocks, most efficiently provided by supernova remnants",
+            "Stars directly radiate synchrotron",
+            "Cosmic expansion accelerates electrons"
+        ],
+        correctAnswer: 1
+    }
+];
 
         // --- Authentication ---
         onAuthStateChanged(auth, (user) => {
