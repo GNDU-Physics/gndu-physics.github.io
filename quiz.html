@@ -130,9 +130,9 @@
                 <!-- Ranking Screen -->
                 <div id="ranking-screen" class="hidden text-center">
                      <div class="bg-white p-6 border border-gray-400 rounded-sm">
-                        <h2 class="text-2xl font-bold mb-6 text-black">Quiz Over!</h2>
-                        <p class="text-black mb-6">Here are the final rankings:</p>
-                        <div id="ranking-list" class="space-y-2 text-left"></div>
+                         <h2 class="text-2xl font-bold mb-6 text-black">Quiz Over!</h2>
+                         <p class="text-black mb-6">Here are the final rankings:</p>
+                         <div id="ranking-list" class="space-y-2 text-left"></div>
                      </div>
                      <button onclick="showRoleSelection()" class="mt-8 py-2 px-4 win-xp-button bg-blue-600 text-white font-bold">Play Again</button>
                 </div>
@@ -180,209 +180,209 @@
         let quizStartTime;
         let participantDocId = null;
         let isSubmitted = false;
-        const quizDuration = 60;
+        const quizDuration = 190;
         const questions = [
-    {
-        text: "Why does the Chandrasekhar limit exist only for electron-degenerate matter and not for neutron stars or black holes?",
-        options: [
-            "Electrons become relativistic; neutron matter never does",
-            "Electron degeneracy pressure saturates relativistically; neutron stars are set by strong-interaction EOS; black holes ignore pressure once horizons form",
-            "Pair production removes degeneracy only for electrons",
-            "Photons dominate pressure in all compact objects"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "Why is iron the end point of stellar nucleosynthesis in massive stars?",
-        options: [
-            "Iron sinks to the core and blocks convection",
-            "Fusion beyond iron consumes energy; binding energy per nucleon peaks, so further fusion is endothermic",
-            "Neutrinos disintegrate heavier nuclei first",
-            "Radiation pressure fragments iron before fusion"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "What drives the κ-mechanism pulsations in Cepheid and RR Lyrae stars?",
-        options: [
-            "Magnetic buoyancy changing opacity",
-            "Shock heating from stellar winds",
-            "Ionization-zone opacity increase traps heat, raising pressure and causing cyclic expansion/contraction",
-            "Rotational flattening modulating gravity darkening"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Why do galaxy rotation curves remain flat at large radii?",
-        options: [
-            "Gas pressure supports outer disks",
-            "Tidal interactions add angular momentum",
-            "Non-luminous dark matter halo dominates the mass distribution at large radii",
-            "Stellar radiation pressure accelerates outer stars"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Pop I vs Pop II stars differ primarily because:",
-        options: [
-            "They have identical ages but different masses",
-            "Pop I form in halos; Pop II in disks",
-            "Chemical enrichment over time makes Pop I metal-rich in disks; Pop II metal-poor in halo/bulge",
-            "Pop II uniquely undergo CNO burning"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Why do more massive stars live shorter lives?",
-        options: [
-            "They burn cooler and slower",
-            "Convection limits fuel access",
-            "Higher core temperatures cause vastly higher fusion rates that outpace the extra fuel",
-            "Winds shut off fusion early regardless of mass"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Why are CO rotational transitions used to trace H₂ clouds?",
-        options: [
-            "H₂ emits strongly in radio at low temperatures",
-            "CO self-destructs in UV, matching H₂",
-            "CO has bright rotational lines excited at cloud temperatures; H₂ lacks a dipole and is hard to excite",
-            "CO uniquely resists freeze-out"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Why are globular clusters old and metal-poor while open clusters are young and metal-rich?",
-        options: [
-            "Globulars continuously accrete pristine gas",
-            "Open clusters form only in halos",
-            "Globulars formed early with unenriched gas; open clusters form later in enriched disks and disperse quickly",
-            "Stellar winds prevent enrichment in globulars"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "What does the Magorrian relation imply about galaxy–black hole co-evolution?",
-        options: [
-            "Bulges grow after black holes complete growth",
-            "Co-evolution: black-hole feedback and bulge assembly are linked through gas inflow/outflow regulation",
-            "Black-hole mass set only by halo spin",
-            "Disks determine black-hole mass directly"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "What role does the Jeans criterion play in star formation?",
-        options: [
-            "Whether turbulence heats the gas",
-            "Whether magnetic fields amplify",
-            "Whether self-gravity overcomes pressure on a given scale to trigger collapse",
-            "Whether dust forms ice mantles"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Why are OB associations found in spiral arms but not in ellipticals?",
-        options: [
-            "Ellipticals lack any stars",
-            "Spiral shocks compress gas; ellipticals lack cold, dense gas and spiral density waves",
-            "OB stars cannot form in metal-rich gas",
-            "Spiral arms block supernova feedback"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "Why do AGN show broad emission lines?",
-        options: [
-            "Gravitational redshift in the narrow-line region",
-            "Dust scattering in the torus",
-            "High-velocity gas near the black hole produces Doppler broadening; orientation and virial motions dominate",
-            "Stellar absorption fills the lines"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "How do Seyfert Type 1 and Type 2 galaxies differ spectroscopically?",
-        options: [
-            "Type 1 shows only narrow lines; Type 2 only broad lines",
-            "Type 1 shows broad + narrow emission lines; Type 2 shows only narrow lines due to orientation and obscuration",
-            "Type 1 shows absorption features; Type 2 shows only emission",
-            "Both are identical; classification is historical only"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "Why does stellar metallicity generally decline with galactocentric radius?",
-        options: [
-            "Star formation is uniform everywhere",
-            "Outer disks lose metals to radiation pressure",
-            "Inside-out growth and higher central star formation enrich inner regions more than outskirts",
-            "Metals are made only by bulges"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "What is the physical origin of the Eddington limit?",
-        options: [
-            "Electron capture in dense cores",
-            "Luminosity where radiation force on electrons balances gravity on ions, regulating accretion/outflows",
-            "Rotational breakup threshold",
-            "Applies only to stars, not accretion disks"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "Why do pulsars spin down over time?",
-        options: [
-            "Core fusion stops",
-            "Magnetic dipole radiation and particle winds extract rotational energy and angular momentum",
-            "Crusts accrete angular momentum",
-            "External tides accelerate them"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "How is pressure support different in main-sequence stars vs white dwarfs?",
-        options: [
-            "Both supported by gas pressure",
-            "MS: radiation only; WD: gas pressure",
-            "MS: thermal gas (and sometimes radiation) from fusion; WD: electron degeneracy independent of temperature",
-            "WD supported by magnetic fields"
-        ],
-        correctAnswer: 2
-    },
-    {
-        text: "Why are RR Lyrae stars used as standard candles differently from Cepheids?",
-        options: [
-            "RR Lyrae are always younger",
-            "RR Lyrae have nearly constant luminosity; Cepheids use period–luminosity relation",
-            "Cepheids are only in globular clusters",
-            "RR Lyrae vary randomly"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "Why does the Milky Way halo contain mostly pressure-supported stars rather than rotation-supported ones?",
-        options: [
-            "Halo stars are too young to rotate",
-            "Halo assembled through mergers and scattering, producing isotropic velocity dispersions",
-            "Dark matter forces suppress rotation",
-            "Halo gas cools too fast"
-        ],
-        correctAnswer: 1
-    },
-    {
-        text: "Why do synchrotron-emitting electrons in galaxies indicate past supernova activity?",
-        options: [
-            "Dust scattering enhances magnetic fields",
-            "Electrons must be relativistically accelerated in shocks, most efficiently provided by supernova remnants",
-            "Stars directly radiate synchrotron",
-            "Cosmic expansion accelerates electrons"
-        ],
-        correctAnswer: 1
-    }
-];
+            {
+                text: "Why does the Chandrasekhar limit exist only for electron-degenerate matter and not for neutron stars or black holes?",
+                options: [
+                    "Electrons become relativistic, whereas in neutron matter the interactions behave differently and do not yield a sharp mass cutoff",
+                    "Electron degeneracy pressure saturates relativistically; neutron stars are set by strong-interaction EOS; black holes ignore pressure once horizons form",
+                    "Pair-production processes destabilize electron gases but do not influence neutrons or black holes in the same way",
+                    "Photon pressure dominates at extreme densities, preventing the same type of limiting mass behavior from occurring in all cases"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "Why is iron the end point of stellar nucleosynthesis in massive stars?",
+                options: [
+                    "Iron nuclei collect in the stellar core where their nuclear binding resists fusion, altering energy transport and halting reactions",
+                    "Fusion beyond iron consumes energy; binding energy per nucleon peaks, so further fusion is endothermic",
+                    "Neutrino-driven processes fragment heavier nuclei more easily than iron, making iron the most stable core product",
+                    "Radiation pressure inside advanced stellar cores disrupts iron-group nuclei, preventing stable production of heavier species"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "What drives the κ-mechanism pulsations in Cepheid and RR Lyrae stars?",
+                options: [
+                    "Magnetic buoyancy modifies opacity in ionization zones, storing energy and later releasing it in an oscillatory pattern",
+                    "Stellar winds create shock fronts in the atmosphere, and reflected energy cycles drive the observed radial pulsations",
+                    "Ionization-zone opacity increase traps heat, raising pressure and causing cyclic expansion/contraction",
+                    "Rapid stellar rotation alters centrifugal balance, changing gravity darkening and producing apparent pulsation signatures"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Why do galaxy rotation curves remain flat at large radii?",
+                options: [
+                    "Gas pressure in extended disks contributes additional dynamical support that mimics the presence of extra unseen mass",
+                    "Gravitational torques from interactions with nearby galaxies inject angular momentum into outer stellar populations",
+                    "Non-luminous dark matter halo dominates the mass distribution at large radii",
+                    "Strong stellar winds and radiation fields accelerate stars in the outskirts, sustaining orbital speeds against gravity"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Pop I vs Pop II stars differ primarily because:",
+                options: [
+                    "Both populations cover similar age ranges, but their distinct initial mass distributions set evolutionary differences",
+                    "Pop I stars preferentially form in halos, while Pop II stars are observed more abundantly in galactic disks",
+                    "Chemical enrichment over time makes Pop I metal-rich in disks; Pop II metal-poor in halo/bulge",
+                    "Nuclear burning cycles differ, with Pop II relying mainly on the CNO cycle while Pop I remains dominated by pp chains"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Why do more massive stars live shorter lives?",
+                options: [
+                    "Their interiors remain cooler and less dense, which paradoxically causes them to process nuclear fuel inefficiently",
+                    "Convective zones restrict mixing, leaving some hydrogen unburned and limiting the total available nuclear energy",
+                    "Higher core temperatures cause vastly higher fusion rates that outpace the extra fuel",
+                    "Strong stellar winds strip mass quickly, forcing them to exhaust their fuel supply regardless of the larger reservoir"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Why are CO rotational transitions used to trace H₂ clouds?",
+                options: [
+                    "Cold H₂ molecules emit bright low-frequency radiation in radio bands, making them easily detectable directly",
+                    "CO molecules are destroyed at the same ultraviolet rates as H₂, ensuring both species trace identical environments",
+                    "CO has bright rotational lines excited at cloud temperatures; H₂ lacks a dipole and is hard to excite",
+                    "Unlike most molecules, CO remains in the gas phase without freezing onto dust, marking the same regions as H₂"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Why are globular clusters old and metal-poor while open clusters are young and metal-rich?",
+                options: [
+                    "Globular clusters constantly accrete pristine intergalactic gas, which dilutes enrichment products from earlier stars",
+                    "Open clusters are associated with galactic halos, and their location explains their younger age and higher metallicity",
+                    "Globulars formed early with unenriched gas; open clusters form later in enriched disks and disperse quickly",
+                    "Continuous stellar winds from early stars prevented globulars from retaining heavy elements, unlike younger clusters"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "What does the Magorrian relation imply about galaxy–black hole co-evolution?",
+                options: [
+                    "Bulge growth proceeds independently and occurs after black hole accretion has essentially finished",
+                    "Co-evolution: black-hole feedback and bulge assembly are linked through gas inflow/outflow regulation",
+                    "Black-hole mass is determined solely by the angular momentum of the surrounding dark matter halo",
+                    "The disk’s rotational dynamics directly fix the black-hole mass through long-term gravitational coupling"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "What role does the Jeans criterion play in star formation?",
+                options: [
+                    "It sets the threshold at which turbulence-driven heating becomes strong enough to halt collapse in molecular gas",
+                    "It defines the regime where magnetic-field amplification alters the stability of interstellar clouds",
+                    "Whether self-gravity overcomes pressure on a given scale to trigger collapse",
+                    "It determines when icy mantles on dust grains accumulate, allowing clouds to cool efficiently and collapse"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Why are OB associations found in spiral arms but not in ellipticals?",
+                options: [
+                    "Elliptical galaxies contain very few stars, making them unable to support associations of massive O and B types",
+                    "Spiral shocks compress gas; ellipticals lack cold, dense gas and spiral density waves",
+                    "OB stars cannot form in metal-rich environments, and elliptical galaxies are dominated by enriched stellar populations",
+                    "Spiral arms prevent supernova feedback from disrupting clusters, while ellipticals lack such structures"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "Why do AGN show broad emission lines?",
+                options: [
+                    "Gravitational redshift broadens lines in the narrow-line region far from the black hole",
+                    "Dust scattering within the circumnuclear torus produces apparent spectral broadening across many lines",
+                    "High-velocity gas near the black hole produces Doppler broadening; orientation and virial motions dominate",
+                    "Absorption by stellar atmospheres artificially fills in narrow lines, making them appear broad in observations"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "How do Seyfert Type 1 and Type 2 galaxies differ spectroscopically?",
+                options: [
+                    "Type 1 spectra display only narrow emission lines, whereas Type 2 show exclusively broad emission lines",
+                    "Type 1 shows broad + narrow emission lines; Type 2 shows only narrow lines due to orientation and obscuration",
+                    "Type 1 is dominated by absorption features, while Type 2 galaxies contain emission-only line spectra",
+                    "Both appear identical spectroscopically, and the classification is thought to be entirely historical in origin"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "Why does stellar metallicity generally decline with galactocentric radius?",
+                options: [
+                    "Star formation efficiency remains uniform across the galaxy, leading to a flat metallicity distribution",
+                    "Outer disks preferentially lose heavy elements due to radiation-driven winds that expel enriched material",
+                    "Inside-out growth and higher central star formation enrich inner regions more than outskirts",
+                    "Metal production is confined to galactic bulges, and stars formed elsewhere inherit lower abundances"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "What is the physical origin of the Eddington limit?",
+                options: [
+                    "Electron capture at extreme densities halts further collapse, imposing a luminosity restriction",
+                    "Luminosity where radiation force on electrons balances gravity on ions, regulating accretion/outflows",
+                    "The centrifugal force at high spin rates equals gravity, marking a critical threshold for stellar stability",
+                    "The concept applies strictly to stars and does not extend to accretion disks or compact objects"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "Why do pulsars spin down over time?",
+                options: [
+                    "Nuclear burning ceases in their cores, reducing angular momentum and slowing rotation",
+                    "Magnetic dipole radiation and particle winds extract rotational energy and angular momentum",
+                    "Accretion of matter onto the crust builds inertia that counteracts and slows the star’s spin",
+                    "Gravitational tides from nearby objects exert drag that gradually decreases the pulsar’s spin rate"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "How is pressure support different in main-sequence stars vs white dwarfs?",
+                options: [
+                    "Both types of stars are supported by ordinary gas pressure and do not rely on any other mechanisms",
+                    "Main-sequence stars rely solely on radiation pressure, while white dwarfs depend only on gas pressure",
+                    "MS: thermal gas (and sometimes radiation) from fusion; WD: electron degeneracy independent of temperature",
+                    "White dwarfs are stabilized mainly through large-scale magnetic fields that balance gravitational collapse"
+                ],
+                correctAnswer: 3
+            },
+            {
+                text: "Why are RR Lyrae stars used as standard candles differently from Cepheids?",
+                options: [
+                    "RR Lyrae are universally younger stars than Cepheids, and their uniform age makes them useful for calibration",
+                    "RR Lyrae have nearly constant luminosity; Cepheids use period–luminosity relation",
+                    "Cepheids are restricted to globular clusters, whereas RR Lyrae occur across diverse galactic environments",
+                    "RR Lyrae variability is stochastic in nature, limiting their use to simplified luminosity comparisons"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "Why does the Milky Way halo contain mostly pressure-supported stars rather than rotation-supported ones?",
+                options: [
+                    "Halo stars are predominantly young objects that have not yet acquired significant angular momentum",
+                    "Halo assembled through mergers and scattering, producing isotropic velocity dispersions",
+                    "Dark-matter gravity suppresses ordered rotation, forcing halo stars to move in random orbits",
+                    "Halo gas cooled quickly and fragmented, leading to a stellar system dominated by chaotic motions"
+                ],
+                correctAnswer: 2
+            },
+            {
+                text: "Why do synchrotron-emitting electrons in galaxies indicate past supernova activity?",
+                options: [
+                    "Dust scattering enhances ambient magnetic fields, boosting electron energy to relativistic levels",
+                    "Electrons must be relativistically accelerated in shocks, most efficiently provided by supernova remnants",
+                    "Stellar surfaces directly radiate synchrotron emission, and remnants only add to the observed flux",
+                    "Large-scale cosmic expansion accelerates galactic electrons to high energies, producing the radiation"
+                ],
+                correctAnswer: 2
+            }
+        ];
 
         // --- Authentication ---
         onAuthStateChanged(auth, (user) => {
@@ -419,7 +419,9 @@
             participantDocId = null;
             isSubmitted = false;
             showView('role-selection-view');
+            // Reset participant view to its initial waiting state
             document.getElementById('waiting-screen').style.display = 'block';
+            document.getElementById('waiting-screen').innerHTML = `<h2 class="text-xl font-bold mb-4 text-black">Welcome, <span id="participant-name"></span>!</h2><p class="text-black mb-6">The quiz will begin shortly. Please wait for the admin to start.</p><div class="loader mx-auto"></div>`;
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('ranking-screen').classList.add('hidden');
         };
@@ -443,6 +445,7 @@
 
                 const configDoc = await getDoc(doc(db, "quizConfig", "passwords"));
                 if (!configDoc.exists()) {
+                    // First-time setup: create default passwords
                     await setDoc(doc(db, "quizConfig", "passwords"), { admin: "terabaap", participant: "nspd25" });
                     errorEl.innerText = "First-time setup complete. Default passwords have been set. Please try again.";
                     return;
@@ -513,7 +516,7 @@
                     break;
                 case 'finished':
                     if (!isSubmitted) {
-                        await submitQuiz(true);
+                        await submitQuiz(true); // Auto-submit if not already submitted
                     }
                     clearInterval(quizTimerInterval);
                     stopCornerCountdown();
@@ -539,6 +542,11 @@
         };
 
         window.resetQuiz = async () => {
+            // A simple confirmation before deleting all data.
+            // NOTE: In a real app, a custom modal is better than confirm().
+            if (!confirm("Are you sure you want to reset the quiz? All participant data will be deleted.")) {
+                return;
+            }
             await setDoc(doc(db, "quizState", "current"), { status: "waiting" });
             const participantsSnapshot = await getDocs(collection(db, "participants"));
             const batch = writeBatch(db);
@@ -643,27 +651,51 @@
             }, 1000);
         }
 
+        /**
+         * Shuffles an array in place using the Fisher-Yates algorithm.
+         * @param {Array} array The array to shuffle.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
         function renderQuestion() {
             const question = questions[currentQuestionIndex];
             document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${question.text}`;
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
-            question.options.forEach((option, index) => {
-                const isSelected = userAnswers[currentQuestionIndex] === index;
+
+            // Create an array of options with their original index to track the correct answer after shuffling
+            const optionsToShuffle = question.options.map((optionText, index) => ({
+                text: optionText,
+                originalIndex: index
+            }));
+
+            // Shuffle the options
+            shuffleArray(optionsToShuffle);
+
+            // Render the shuffled options
+            optionsToShuffle.forEach(shuffledOption => {
+                const isSelected = userAnswers[currentQuestionIndex] === shuffledOption.originalIndex;
                 const button = document.createElement('button');
-                button.innerText = option;
+                button.innerText = shuffledOption.text;
                 button.className = `w-full text-left p-2 win-xp-button ${isSelected ? 'bg-blue-300' : 'bg-white'}`;
-                button.onclick = () => selectAnswer(index);
+                // When an answer is selected, we store its ORIGINAL index
+                button.onclick = () => selectAnswer(shuffledOption.originalIndex);
                 optionsContainer.appendChild(button);
             });
+
             document.getElementById('prev-btn').style.visibility = currentQuestionIndex === 0 ? 'hidden' : 'visible';
             document.getElementById('next-btn').classList.toggle('hidden', currentQuestionIndex === questions.length - 1);
             document.getElementById('submit-btn').classList.toggle('hidden', currentQuestionIndex !== questions.length - 1);
         }
 
-        function selectAnswer(index) {
-            userAnswers[currentQuestionIndex] = index;
-            renderQuestion();
+        function selectAnswer(originalIndex) {
+            userAnswers[currentQuestionIndex] = originalIndex;
+            renderQuestion(); // Re-render to show selection. The shuffle will be different, but the selection is preserved.
         }
 
         window.navigateQuestion = (direction) => {
@@ -684,6 +716,7 @@
             
             let score = 0;
             for (let i = 0; i < questions.length; i++) {
+                // The check still works because we stored the original correct index
                 if (userAnswers[i] === questions[i].correctAnswer) score++;
             }
             try {
@@ -697,7 +730,9 @@
                 }
             } catch (e) {
                 console.error("Error submitting quiz:", e);
-                alert("Could not submit your answers.");
+                // Use a custom message instead of alert
+                const errorEl = document.getElementById('quiz-screen');
+                errorEl.innerHTML = `<p class="text-red-700 text-center p-4">Could not submit your answers due to a network error. Please check your connection.</p>`;
             }
         };
 
@@ -711,6 +746,7 @@
                 const participantsSnapshot = await getDocs(collection(db, "participants"));
                 const rankings = [];
                 participantsSnapshot.forEach(doc => rankings.push(doc.data()));
+                // Sort by score (descending), then by time taken (ascending)
                 rankings.sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
                 targetElement.innerHTML = '';
                 if (rankings.length === 0) {
