@@ -180,7 +180,8 @@
         let quizStartTime;
         let participantDocId = null;
         let isSubmitted = false;
-        const quizDuration = 190;
+        let participantQuiz = []; // Holds the shuffled quiz for the current participant
+        const quizDuration = 150;
         const questions = [
             {
                 text: "Why does the Chandrasekhar limit exist only for electron-degenerate matter and not for neutron stars or black holes?",
@@ -419,7 +420,6 @@
             participantDocId = null;
             isSubmitted = false;
             showView('role-selection-view');
-            // Reset participant view to its initial waiting state
             document.getElementById('waiting-screen').style.display = 'block';
             document.getElementById('waiting-screen').innerHTML = `<h2 class="text-xl font-bold mb-4 text-black">Welcome, <span id="participant-name"></span>!</h2><p class="text-black mb-6">The quiz will begin shortly. Please wait for the admin to start.</p><div class="loader mx-auto"></div>`;
             document.getElementById('quiz-screen').classList.add('hidden');
@@ -438,14 +438,12 @@
             }
 
             try {
-                // Initialize AudioContext on user interaction
                 if (!audioCtx) {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
 
                 const configDoc = await getDoc(doc(db, "quizConfig", "passwords"));
                 if (!configDoc.exists()) {
-                    // First-time setup: create default passwords
                     await setDoc(doc(db, "quizConfig", "passwords"), { admin: "terabaap", participant: "nspd25" });
                     errorEl.innerText = "First-time setup complete. Default passwords have been set. Please try again.";
                     return;
@@ -455,7 +453,7 @@
                 if (currentRole === 'admin' && password === passwords.admin) {
                     showView('admin-view');
                 } else if (currentRole === 'participant' && password === passwords.participant) {
-                    isSubmitted = false; // Reset submission flag for new participant
+                    isSubmitted = false;
                     const newDocRef = await addDoc(collection(db, "participants"), {
                         name: name, authUid: userId, answers: {}, score: 0, timeTaken: 0, submitted: false
                     });
@@ -507,7 +505,7 @@
                     stopCornerCountdown();
                     break;
                 case 'running':
-                    if (quizScreen.classList.contains('hidden')) {
+                    if (quizScreen.classList.contains('hidden') && !isSubmitted) {
                         waitingScreen.style.display = 'none';
                         quizScreen.classList.remove('hidden');
                         rankingScreen.classList.add('hidden');
@@ -516,7 +514,7 @@
                     break;
                 case 'finished':
                     if (!isSubmitted) {
-                        await submitQuiz(true); // Auto-submit if not already submitted
+                        await submitQuiz(true);
                     }
                     clearInterval(quizTimerInterval);
                     stopCornerCountdown();
@@ -542,8 +540,6 @@
         };
 
         window.resetQuiz = async () => {
-            // A simple confirmation before deleting all data.
-            // NOTE: In a real app, a custom modal is better than confirm().
             if (!confirm("Are you sure you want to reset the quiz? All participant data will be deleted.")) {
                 return;
             }
@@ -583,15 +579,15 @@
                 if (timeLeft >= 0) {
                     element.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
                     if (playSound) {
-                        if (timeLeft === 10) playBeep(0.5); // Long beep at 10
-                        else if (timeLeft < 10 && timeLeft > 0) playBeep(); // Short beeps
-                        else if (timeLeft === 0) playBeep(0.7, 523); // Final long beep
+                        if (timeLeft === 10) playBeep(0.5);
+                        else if (timeLeft < 10 && timeLeft > 0) playBeep();
+                        else if (timeLeft === 0) playBeep(0.7, 523);
                     }
                 } else {
                     element.innerText = "00:00";
-                    return true; // Indicates timer finished
+                    return true;
                 }
-                return false; // Indicates timer still running
+                return false;
             };
             return update;
         }
@@ -602,7 +598,7 @@
             timerEl.classList.remove('hidden');
             if (adminTimerInterval) clearInterval(adminTimerInterval);
             const update = createCountdown(timerEl, state, true);
-            update(); // Initial call
+            update();
             adminTimerInterval = setInterval(() => {
                 if (update()) clearInterval(adminTimerInterval);
             }, 1000);
@@ -620,7 +616,7 @@
             cornerTimerEl.classList.remove('hidden');
             if (cornerTimerInterval) clearInterval(cornerTimerInterval);
             const update = createCountdown(cornerTimerEl, state);
-            update(); // Initial call
+            update();
             cornerTimerInterval = setInterval(() => {
                 if (update()) clearInterval(cornerTimerInterval);
             }, 1000);
@@ -637,13 +633,27 @@
             currentQuestionIndex = 0;
             userAnswers = {};
             quizStartTime = Date.now();
+            
+            // Shuffle questions and options ONCE at the start for this participant
+            participantQuiz = questions.map(q => {
+                const optionsToShuffle = q.options.map((optionText, index) => ({
+                    text: optionText,
+                    originalIndex: index
+                }));
+                shuffleArray(optionsToShuffle);
+                return {
+                    text: q.text,
+                    shuffledOptions: optionsToShuffle,
+                };
+            });
+
             renderQuestion();
             startCornerCountdown(state);
 
             const timerEl = document.getElementById('timer');
             if (quizTimerInterval) clearInterval(quizTimerInterval);
             const update = createCountdown(timerEl, state, true);
-            update(); // Initial call
+            update();
             quizTimerInterval = setInterval(() => {
                 if (update()) {
                     clearInterval(quizTimerInterval);
@@ -651,10 +661,6 @@
             }, 1000);
         }
 
-        /**
-         * Shuffles an array in place using the Fisher-Yates algorithm.
-         * @param {Array} array The array to shuffle.
-         */
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -663,27 +669,16 @@
         }
 
         function renderQuestion() {
-            const question = questions[currentQuestionIndex];
+            const question = participantQuiz[currentQuestionIndex];
             document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${question.text}`;
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
 
-            // Create an array of options with their original index to track the correct answer after shuffling
-            const optionsToShuffle = question.options.map((optionText, index) => ({
-                text: optionText,
-                originalIndex: index
-            }));
-
-            // Shuffle the options
-            shuffleArray(optionsToShuffle);
-
-            // Render the shuffled options
-            optionsToShuffle.forEach(shuffledOption => {
+            question.shuffledOptions.forEach(shuffledOption => {
                 const isSelected = userAnswers[currentQuestionIndex] === shuffledOption.originalIndex;
                 const button = document.createElement('button');
                 button.innerText = shuffledOption.text;
                 button.className = `w-full text-left p-2 win-xp-button ${isSelected ? 'bg-blue-300' : 'bg-white'}`;
-                // When an answer is selected, we store its ORIGINAL index
                 button.onclick = () => selectAnswer(shuffledOption.originalIndex);
                 optionsContainer.appendChild(button);
             });
@@ -695,7 +690,7 @@
 
         function selectAnswer(originalIndex) {
             userAnswers[currentQuestionIndex] = originalIndex;
-            renderQuestion(); // Re-render to show selection. The shuffle will be different, but the selection is preserved.
+            renderQuestion();
         }
 
         window.navigateQuestion = (direction) => {
@@ -707,7 +702,7 @@
         };
 
         window.submitQuiz = async (isAutoSubmit = false) => {
-            if (isSubmitted) return; // Prevent double submission
+            if (isSubmitted) return;
             isSubmitted = true;
 
             clearInterval(quizTimerInterval);
@@ -716,7 +711,6 @@
             
             let score = 0;
             for (let i = 0; i < questions.length; i++) {
-                // The check still works because we stored the original correct index
                 if (userAnswers[i] === questions[i].correctAnswer) score++;
             }
             try {
@@ -730,9 +724,8 @@
                 }
             } catch (e) {
                 console.error("Error submitting quiz:", e);
-                // Use a custom message instead of alert
                 const errorEl = document.getElementById('quiz-screen');
-                errorEl.innerHTML = `<p class="text-red-700 text-center p-4">Could not submit your answers due to a network error. Please check your connection.</p>`;
+                errorEl.innerHTML = `<p class="text-red-700 text-center p-4">Could not submit your answers. Please check your connection.</p>`;
             }
         };
 
@@ -746,7 +739,6 @@
                 const participantsSnapshot = await getDocs(collection(db, "participants"));
                 const rankings = [];
                 participantsSnapshot.forEach(doc => rankings.push(doc.data()));
-                // Sort by score (descending), then by time taken (ascending)
                 rankings.sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
                 targetElement.innerHTML = '';
                 if (rankings.length === 0) {
